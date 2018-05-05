@@ -1,213 +1,220 @@
-# Program Structure
+# Estructura de Programa
 
 {{quote {author: "_why", title: "Why's (Poignant) Guide to Ruby", chapter: true}
 
-And my heart glows bright red under my filmy, translucent skin and
-they have to administer 10cc of JavaScript to get me to come back. (I
-respond well to toxins in the blood.) Man, that stuff will kick the
-peaches right out your gills!
+Y mi corazón brilla de un color rojo brillante bajo mi piel transparente y
+translúcida, y tienen que administrarme 10cc de JavaScript para conseguir que
+regrese. (respondo bien a las toxinas en la sangre.) Hombre, esa cosa es
+increible!
 
 quote}}
 
 {{index why, "Poignant Guide"}}
 
-{{figure {url: "img/chapter_picture_2.jpg", alt: "Picture of tentacles holding objects", chapter: framed}}}
+{{figure {url: "img/chapter_picture_2.jpg", alt: "Foto de tentaculos sosteniendo objetos", chapter: framed}}}
 
-In this chapter, we start to do things that can actually be called
-_programming_. We will expand our command of the JavaScript language
-beyond the nouns and sentence fragments we've seen so far, to the
-point where we can express meaningful prose.
+En este capítulo, comenzaremos a hacer cosas que realmente se pueden llamar
+_programación_. Expandiremos nuestro dominio del lenguaje JavaScript
+más allá de los sustantivos y fragmentos de oraciones que hemos visto hasta
+ahora, al punto donde podemos expresar prosa significativa.
 
-## Expressions and statements
+## Expresiones y declaraciones
 
 {{index grammar, syntax, [code, "structure of"], grammar, [JavaScript, syntax]}}
 
-In [Chapter ?](values), we made values and applied operators to them
-to get new values. Creating values like this is the main substance of
-any JavaScript program. But that substance has to be framed in a
-larger structure to be useful. So that's what we'll get to next.
+En el [Capítulo 1](valores), creamos valores y les aplicamos operadores a ellos
+para obtener nuevos valores. Crear valores de esta manera es la sustancia
+principal de cualquier programa en JavaScript. Pero esa sustancia tiene que
+enmarcarse en una estructura más grande para poder ser útil. Así que eso es
+lo que veremos a continuación.
 
 {{index "literal expression"}}
 
-A fragment of code that produces a value is called an
-_((expression))_. Every value that is written literally (such as `22`
-or `"psychoanalysis"`) is an expression. An expression between
-((parentheses)) is also an expression, as is a ((binary operator))
-applied to two expressions or a ((unary operator)) applied to one.
+Un fragmento de código que produce un valor se llama una
+_((expresión))_. Cada valor que se escribe literalmente (como `22`
+o `"psicoanálisis"`) es una expresión. Una expresión entre
+((paréntesis)) también es una expresión, como lo es un ((operador binario))
+aplicado a dos expresiones o un ((operador unario)) aplicado a una sola.
 
 {{index [nesting, "of expressions"], "human language"}}
 
-This shows part of the beauty of a language-based interface.
-Expressions can contain other expressions in a way very similar to the
-way subsentences in human languages are nested—a subsentence can
-contain its own subsentences, and so on. This allows us to build
-expressions that describe arbitrarily complex computations.
+Esto demuestra parte de la belleza de una interfaz basada en un lenguaje.
+Las expresiones pueden contener otras expresiones de una manera muy similar
+a como las sub-oraciones en los lenguajes humanos están anidadas, una
+sub-oración puede contener sus propias sub-oraciones, y así sucesivamente.
+Esto nos permite construir expresiones que describen cálculos arbitrariamente
+complejos.
 
 {{index statement, semicolon, program}}
 
-If an expression corresponds to a sentence fragment, a JavaScript
-_statement_ corresponds to a full sentence. A program is a list of
-statements.
+Si una expresión corresponde al fragmento de una oración, una _declaración_
+en JavaScript corresponde a una oración completa. Un programa es una lista de
+declaraciones.
 
 {{index syntax}}
 
-The simplest kind of statement is an expression with a semicolon after
-it. This is a program:
+El tipo más simple de declaración es una expresión con un punto y coma después
+ella. Esto es un programa:
 
 ```
 1;
 !false;
 ```
 
-It is a useless program, though. An ((expression)) can be content to
-just produce a value, which can then be used by the enclosing code. A
-((statement)) stands on its own, so it amounts to something only if it
-affects the world. It could display something on the screen—that
-counts as changing the world—or it could change the internal state of
-the machine in a way that will affect the statements that come after
-it. These changes are called _((side effect))s_. The statements in the
-previous example just produce the values `1` and `true` and then
-immediately throw them away. This leaves no impression on the world at
-all. When you run this program, nothing observable happens.
+Sin embargo, es un programa inútil. Una ((expresión)) puede estar feliz solo con
+producir un valor, que luego pueda ser utilizado por el código circundante. Una
+((declaración)) es independiente por si misma, por lo que equivale a
+algo solo si afecta al mundo. Podría mostrar algo en la pantalla—eso
+cuenta como cambiar el mundo—o podría cambiar el estado interno de
+la máquina en una manera que afectará a las declaraciones que vengan después de
+ella. Estos cambios se llaman _((efecto secundario))s_. Las declaraciones en el
+ejemplo anterior solo producen los valores `1` y `true` y luego
+inmediatamente los tira a la basura. Esto no deja ninguna huella en el mundo.
+Cuando ejecutes este programa, nada observable ocurre.
 
 {{index "programming style", "automatic semicolon insertion", semicolon}}
 
-In some cases, JavaScript allows you to omit the semicolon at the end
-of a statement. In other cases, it has to be there, or the next
-((line)) will be treated as part of the same statement. The rules for
-when it can be safely omitted are somewhat complex and error-prone. So
-in this book, every statement that needs a semicolon will always get
-one. I recommend you do the same, at least until you've learned more
-about the subtleties of missing semicolons.
+En algunos casos, JavaScript te permite omitir el punto y coma al final
+de una declaración. En otros casos, tiene que estar allí, o la próxima
+((línea)) serán tratada como parte de la misma declaración. Las reglas para
+saber cuando se puede omitir con seguridad son algo complejas y propensas a
+errores. Asi que en este libro, cada declaración que necesite un punto y coma
+siempre tendra uno. Te recomiendo que hagas lo mismo, al menos hasta que hayas
+aprendido más sobre las sutilezas de los puntos y comas que puedan ser
+omitidos.
 
-## Bindings
+## Vinculaciones
 
 {{indexsee variable, binding}}
 {{index syntax, [binding, definition], "side effect", memory}}
 
-How does a program keep an internal ((state))? How does it remember
-things? We have seen how to produce new values from old values, but
-this does not change the old values, and the new value has to be
-immediately used or it will dissipate again. To catch and hold values,
-JavaScript provides a thing called a _binding_, or _variable_:
+Cómo mantiene un programa un ((estado)) interno? Cómo recuerda
+cosas? Hasta ahora hemos visto cómo producir nuevos valores a partir de
+valores anteriores, pero esto no cambia los valores anteriores, y el nuevo valor
+tiene que ser usado inmediatamente o se disipará nuevamente. Para atrapar y
+mantener valores, JavaScript proporciona una cosa llamada _vinculación_, o
+_variable_:
 
 ```
-let caught = 5 * 5;
+let atrapado = 5 * 5;
 ```
 
 {{index "let keyword"}}
 
-That's a second kind of ((statement)). The special word
-(_((keyword))_) `let` indicates that this sentence is going to define
-a binding. It is followed by the name of the binding and, if we want
-to immediately give it a value, by an `=` operator and an expression.
+Ese es un segundo tipo de ((declaración)). La palabra especial
+(_((palabra clave))_) `let` indica que esta oración va a definir
+una vinculación. Le sigue el nombre de la vinculación y, si queremos
+darle un valor inmediatamente, un operador `=` y una expresión.
 
-The previous statement creates a binding called `caught` and uses it
-to grab hold of the number that is produced by multiplying 5 by 5.
+La declaración anterior crea una vinculación llamada `atrapado` y la usa
+para capturar el número que se produce al multiplicar 5 por 5.
 
-After a binding has been defined, its name can be used as an
-((expression)). The value of such an expression is the value the
-binding currently holds. Here's an example:
+Después de que una vinculación haya sido definida, su nombre puede usarse como
+una ((expresión)). El valor de tal expresión es el valor que la
+vinculación mantiene actualmente. Aquí hay un ejemplo:
 
 ```
-let ten = 10;
-console.log(ten * ten);
+let diez = 10;
+console.log(diez * diez);
 // → 100
 ```
 
 {{index "= operator", assignment, [binding, assignment]}}
 
-When a binding points at a value, that does not mean it is tied to
-that value forever. The `=` operator can be used at any time on
-existing bindings to disconnect them from their current value and have
-them point to a new one:
+Cuando una vinculación señala a un valor, eso no significa que esté atada a
+ese valor para siempre. El operador `=` puede usarse en cualquier momento en
+vinculaciones existentes para desconectarlas de su valor actual y hacer que
+ellas apuntan a uno nuevo:
 
 ```
-let mood = "light";
-console.log(mood);
-// → light
-mood = "dark";
-console.log(mood);
-// → dark
+let humor = "ligero";
+console.log(humor);
+// → ligero
+humor = "oscuro";
+console.log(humor);
+// → oscuro
 ```
 
 {{index [binding, "model of"], "tentacle (analogy)"}}
 
-You should imagine bindings as tentacles, rather than boxes. They do
-not _contain_ values; they _grasp_ them—two bindings can refer to the
-same value. A program can only access the values that it still has a
-reference to. When you need to remember something, you grow a tentacle
-to hold on to it or you reattach one of your existing tentacles to it.
+Deberías imaginar a las vinculaciones como tentáculos, en lugar de cajas.
+Ellas no _contienen_ valores; ellas los _agarran_—dos vinculaciones pueden
+referirse al mismo valor. Un programa solo puede acceder a los valores que
+todavía pueda referenciar. Cuando necesitas recordar algo, creces un
+tentáculo para aferrarte a él o vuelves a conectar uno de tus tentáculos
+existentes a ese algo.
 
-Let's look at another example. To remember the number of dollars that
-Luigi still owes you, you create a binding. And then when he pays back
-$35, you give this binding a new value:
+Veamos otro ejemplo. Para recordar la cantidad de dólares que
+Luigi aún te debe, creas una vinculación. Y luego, cuando él te
+pague de vuelta $35, le das a esta vinculación un nuevo valor:
 
 ```
-let luigisDebt = 140;
-luigisDebt = luigisDebt - 35;
-console.log(luigisDebt);
+let deudaLuigi = 140;
+deudaLuigi = deudaLuigi - 35;
+console.log(deudaLuigi);
 // → 105
 ```
 
 {{index undefined}}
 
-When you define a binding without giving it a value, the tentacle has
-nothing to grasp, so it ends in thin air. If you ask for the value of
-an empty binding, you'll get the value `undefined`.
+Cuando defines una vinculación sin darle un valor, el tentáculo no tiene
+nada que agarrar, por lo que termina en solo aire. Si pides el valor de
+una vinculación vacía, obtendrás el valor `undefined`.
 
 {{index "let keyword"}}
 
-A single `let` statement may define multiple bindings. The
-definitions must be separated by commas.
+Una sola declaración `let` puede definir múltiples vinculaciones.
+Las definiciones deben estar separadas por comas.
 
 ```
-let one = 1, two = 2;
-console.log(one + two);
+let uno = 1, dos = 2;
+console.log(uno + dos);
 // → 3
 ```
 
-The words `var` and `const` can also be used to create bindings, in a
-way similar to `let`.
+Las palabras `var` y `const` también pueden ser usadas para crear
+vinculaciones, en una manera similar a `let`.
 
 ```
-var name = "Ayda";
-const greeting = "Hello ";
-console.log(greeting + name);
-// → Hello Ayda
+var nombre = "Ayda";
+const saludo = "Hola ";
+console.log(saludo + nombre);
+// → Hola Ayda
 ```
 
 {{index "var keyword"}}
 
-The first, `var` (short for "variable"), is the way bindings were
-declared in pre-2015 JavaScript. We'll get back to the precise way it
-differs from `let` in the [next chapter](functions). For now,
-remember that it mostly does the same thing, but we'll rarely use it
-in this book because it has some confusing properties.
+La primera, `var` (abreviatura de "variable"), es la forma en la que se
+declaraban las vinculaciones en JavaScript previo al 2015. Volveremos a la forma
+precisa en que difiere de `let` en el [próximo capítulo](funciones). Por ahora,
+recuerda que generalmente hace lo mismo, pero raramente la usaremos
+en este libro porque tiene algunas propiedades confusas.
 
 {{index "const keyword", naming}}
 
-The word `const` stands for _((constant))_. It defines a constant
-binding, which points at the same value for as long as it lives. This
-is useful for bindings that give a name to a value so that you can
-easily refer to it later.
+La palabra `const` representa una _((constante))_. Define una vinculación
+constante, que apunta al mismo valor por el tiempo que viva. Esto
+es útil para vinculaciones que le dan un nombre a un valor para que
+fácilmente puedas consultarlo más adelante.
 
-## Binding names
+## Nombres vinculantes
 
 {{index "underscore character", "dollar sign", [binding, naming]}}
 
-Binding names can be any word. Digits can be part of binding
-names—`catch22` is a valid name, for example—but the name must not
-start with a digit. A binding name may include dollar signs (`$`) or
-underscores (`_`), but no other punctuation or special characters.
+Los nombres de las vinculaciones pueden ser cualquier palabra. Los dígitos pueden
+ser parte de los nombres de las vinculaciones pueden—`catch22` es un nombre
+válido, por ejemplo—pero el nombre no debe comenzar con un dígito.
+El nombre de una vinculación puede incluir signos de dólar (`$`) o
+caracteres de subrayado (`_`), pero no otros signos de puntuación o
+caracteres especiales.
 
 {{index syntax, "implements (reserved word)", "interface (reserved word)", "package (reserved word)", "private (reserved word)", "protected (reserved word)", "public (reserved word)", "static (reserved word)", "void operator", "yield (reserved word)", "enum (reserved word)", "reserved word", [binding, naming]}}
 
-Words with a special meaning, such as `let`, are _((keyword))s_, and
-they may not be used as binding names. There are also a number of
-words that are "reserved for use" in ((future)) versions of
-JavaScript, which also can't be used as binding names. The full list
-of keywords and reserved words is rather long:
+Las palabras con un significado especial, como `let`, son _((palabras clave))s_, y
+no pueden usarse como nombres vinculantes. También hay una cantidad de
+palabras que están "reservadas para su uso" en ((futuras)) versiones de
+JavaScript, que tampoco pueden ser usadas como nombres vinculantes.
+La lista completa de palabras clave y palabras reservadas es bastante larga:
 
 ```{lang: "text/plain"}
 break case catch class const continue debugger default
@@ -217,9 +224,9 @@ new package private protected public return static super
 switch this throw true try typeof var void while with yield
 ```
 
-Don't worry about memorizing these. When creating a binding produces
-an unexpected ((syntax error)), see if you're trying to define a
-reserved word.
+No te preocupes por memorizarlas. Cuando crear una vinculación produzca
+un ((error de sintaxis)) inesperado, observa si estas tratando de definir una
+palabra reservada.
 
 ## The environment
 
@@ -1031,13 +1038,13 @@ Passing this string to `console.log` should show something like this:
 
 ```{lang: null}
  # # # #
-# # # # 
+# # # #
  # # # #
-# # # # 
+# # # #
  # # # #
-# # # # 
+# # # #
  # # # #
-# # # # 
+# # # #
 ```
 
 When you have a program that generates this pattern, define a
