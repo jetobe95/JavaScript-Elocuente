@@ -1,16 +1,16 @@
 {{meta {load_files: ["code/scripts.js", "code/chapter/05_higher_order.js", "code/intro.js"], zip: "node/html"}}}
 
-# Higher-Order Functions
+# Funciones de Orden Superior
 
 {{if interactive
 
 {{quote {author: "Master Yuan-Ma", title: "The Book of Programming", chapter: true}
 
-Tzu-li and Tzu-ssu were boasting about the size of their latest
-programs. 'Two-hundred thousand lines,' said Tzu-li, 'not counting
-comments!' Tzu-ssu responded, 'Pssh, mine is almost a *million* lines
-already.' Master Yuan-Ma said, 'My best program has five hundred
-lines.' Hearing this, Tzu-li and Tzu-ssu were enlightened.
+Tzu-li y Tzu-ssu estaban jactándose del tamaño de sus ultimos
+programas. 'Doscientas mil líneas', dijo Tzu-li, 'sin contar los
+comentarios!' Tzu-ssu respondió, 'Pssh, el mío tiene casi un *millón*
+de líneas ya.' El Maestro Yuan-Ma dijo, 'Mi mejor programa tiene quinientas
+líneas.' Al escuchar esto, Tzu-li y Tzu-ssu fueron iluminados.
 
 quote}}
 
@@ -20,127 +20,130 @@ if}}
 
 {{index "Hoare, C.A.R."}}
 
-There are two ways of constructing a software design: One way is to
-make it so simple that there are obviously no deficiencies, and the
-other way is to make it so complicated that there are no obvious
-deficiencies.
+Hay dos formas de construir un diseño de software: Una forma es
+hacerlo tan simple de manera que no hayan deficiencias obvias, y
+la otra es hacerlo tan complicado de manera que
+obviamente no hayan deficiencias.
 
 quote}}
 
-{{figure {url: "img/chapter_picture_5.jpg", alt: "Letters from different scripts", chapter: true}}}
+{{figure {url: "img/chapter_picture_5.jpg", alt: "Letras de diferentes idiomas", chapter: true}}}
 
 {{index "program size"}}
 
-A large program is a costly program, and not just because of the time
-it takes to build. Size almost always involves ((complexity)), and
-complexity confuses programmers. Confused programmers, in turn,
-introduce mistakes (_((bug))s_) into programs. A large program then
-provides a lot of space for these bugs to hide, making them hard to
-find.
+Un programa grande es un programa costoso, y no solo por el tiempo que
+se necesita para construirlo. El tamaño casi siempre involucra ((complejidad)),
+y la complejidad confunde a los programadores. A su vez, los programadores
+confundidos, introducen errores en los programas. Un programa grande entonces
+proporciona de mucho espacio para que estos bugs se oculten, haciéndolos
+difíciles de encontrar.
 
 {{index "summing example"}}
 
-Let's briefly go back to the final two example programs in the
-introduction. The first is self-contained and six lines long:
+Volvamos rapidamente a los dos últimos programas de ejemplo en la
+introducción. El primero es auto-contenido y solo tiene seis líneas de largo:
 
 ```
-let total = 0, count = 1;
-while (count <= 10) {
-  total += count;
-  count += 1;
+let total = 0, cuenta = 1;
+while (cuenta <= 10) {
+  total += cuenta;
+  cuenta += 1;
 }
 console.log(total);
 ```
 
-The second relies on two external functions and is one line long:
+El segundo depende de dos funciones externas y tiene una línea de longitud:
 
 ```
-console.log(sum(range(1, 10)));
+console.log(suma(rango(1, 10)));
 ```
 
-Which one is more likely to contain a bug?
+Cuál es más probable que contenga un bug?
 
 {{index "program size"}}
 
-If we count the size of the definitions of `sum` and `range`, the
-second program is also big—even bigger than the first. But still, I'd
-argue that it is more likely to be correct.
+Si contamos el tamaño de las definiciones de `suma` y `rango`,
+el segundo programa también es grande—incluso puede que sea más grande que
+el primero. Pero aún así, argumentaria que es más probable que sea correcto.
 
 {{index abstraction, "domain-specific language"}}
 
-It is more likely to be correct because the solution is expressed in a
-((vocabulary)) that corresponds to the problem being solved. Summing a
-range of numbers isn't about loops and counters. It is about ranges
-and sums.
+Es más probable que sea correcto porque la solución se expresa en un
+((vocabulario)) que corresponde al problema que se está resolviendo. Sumar un
+rango de números no se trata acerca de ciclos y contadores. Se trata acerca
+de rangos y sumas.
 
-The definitions of this vocabulary (the functions `sum` and `range`)
-will still involve loops, counters, and other incidental details. But
-because they are expressing simpler concepts than the program as a
-whole, they are easier to get right.
+Las definiciones de este vocabulario (las funciones `suma` y `rango`)
+seguirán involucrando ciclos, contadores y otros detalles incidentales. Pero
+ya que expresan conceptos más simples que el programa como un conjunto,
+son más fáciles de realizar correctamente.
 
-## Abstraction
+## Abstracción
 
-In the context of programming, these kinds of vocabularies are usually
-called _((abstraction))s_. Abstractions hide details and give us the
-ability to talk about problems at a higher (or more abstract) level.
+En el contexto de la programación, estos tipos de vocabularios suelen ser
+llamados _((abstraccione))s_. Las abstracciones esconden detalles y nos dan la
+capacidad de hablar acerca de los problemas a un nivel superior
+(o más abstracto).
 
 {{index "recipe analogy", "pea soup"}}
 
-As an analogy, compare these two recipes for pea soup:
+Como una analogía, compara estas dos recetas de sopa de guisantes:
 
 {{quote
 
-Put 1 cup of dried peas per person into a container. Add water until
-the peas are well covered. Leave the peas in water for at least 12
-hours. Take the peas out of the water and put them in a cooking pan.
-Add 4 cups of water per person. Cover the pan and keep the peas
-simmering for two hours. Take half an onion per person. Cut it into
-pieces with a knife. Add it to the peas. Take a stalk of celery per
-person. Cut it into pieces with a knife. Add it to the peas. Take a
-carrot per person. Cut it into pieces. With a knife! Add it to the
-peas. Cook for 10 more minutes.
+Coloque 1 taza de guisantes secos por persona en un recipiente. Agregue agua hasta
+que los guisantes esten bien cubiertos. Deje los guisantes en agua durante al menos 12
+horas. Saque los guisantes del agua y pongalos en una cacerola para cocinar.
+Agregue 4 tazas de agua por persona. Cubra la sartén y mantenga los guisantes
+hirviendo a fuego lento durante dos horas. Tome media cebolla por persona. Cortela en
+piezas con un cuchillo. Agréguela a los guisantes. Tome un tallo de apio por
+persona. Cortelo en pedazos con un cuchillo. Agréguelo a los guisantes. Tome una
+zanahoria por persona. Cortela en pedazos. Con un cuchillo! Agregarla a los
+guisantes. Cocine por 10 minutos más.
 
 quote}}
 
-And the second recipe:
+Y la segunda receta:
 
 {{quote
 
-Per person: 1 cup dried split peas, half a chopped onion, a stalk of
-celery, and a carrot.
+Por persona: 1 taza de guisantes secos, media cebolla picada, un tallo de
+apio y una zanahoria.
 
-Soak peas for 12 hours. Simmer for 2 hours in 4 cups of water
-(per person). Chop and add vegetables. Cook for 10 more minutes.
+Remoje los guisantes durante 12 horas. Cocine a fuego lento durante
+2 horas en 4 tazas de agua (por persona). Picar y agregar verduras.
+Cocine por 10 minutos más.
 
 quote}}
 
 {{index vocabulary}}
 
-The second is shorter and easier to interpret. But you do need to
-understand a few more cooking-related words—_soak_, _simmer_, _chop_,
-and, I guess, _vegetable_.
+La segunda es más corta y fácil de interpretar. Pero necesitas
+entender algunas palabras más relacionadas a la cocina—_remojar_,
+_cocinar a fuego lento_, _picar_, y, supongo, _verduras_.
 
-When programming, we can't rely on all the words we need to be waiting
-for us in the dictionary. Thus you might fall into the pattern of the
-first recipe—work out the precise steps the computer has to perform,
-one by one, blind to the higher-level concepts that they express.
+Cuando programamos, no podemos confiar en que todas las palabras que necesitaremos
+estaran esperando por nosotros en el diccionario. Por lo tanto, puedes caer
+en el patrón de la primera receta—resolviendo los pasos precisos que debe
+realizar la computadora, uno por uno, ciego a los conceptos de orden
+superior que estos expresan.
 
 {{index abstraction}}
 
-It is a useful skill, in programming, to notice when you are working
-at too low a level of abstraction.
+En la programación, es una habilidad útil, darse cuenta cuando estás trabajando
+en un nivel de abstracción demasiado bajo.
 
-## Abstracting repetition
+## Abstrayendo la repetición
 
 {{index array}}
 
-Plain functions, as we've seen them so far, are a good way to build
-abstractions. But sometimes they fall short.
+Las funciones simples, como las hemos visto hasta ahora,
+son una buena forma de construir abstracciones. Pero a veces se quedan cortas.
 
 {{index "for loop"}}
 
-It is common for a program to do something a given number of times.
-You can write a `for` ((loop)) for that, like this:
+Es común que un programa haga algo una determinada cantidad de veces.
+Puedes escribir un ((ciclo)) `for` para eso, de esta manera:
 
 ```
 for (let i = 0; i < 10; i++) {
@@ -148,11 +151,12 @@ for (let i = 0; i < 10; i++) {
 }
 ```
 
-Can we abstract "doing something _N_ times" as a function? Well, it's
-easy to write a function that calls `console.log` _N_ times.
+Podemos abstraer "hacer algo _N_ veces" como una función? Bueno, es
+fácil escribir una función que llame a `console.log` _N_
+cantidad de veces.
 
 ```
-function repeatLog(n) {
+function repetirLog(n) {
   for (let i = 0; i < n; i++) {
     console.log(i);
   }
@@ -163,143 +167,142 @@ function repeatLog(n) {
 
 {{indexsee "higher-order function", "function, higher-order"}}
 
-But what if we want to do something other than logging the numbers?
-Since "doing something" can be represented as a function and functions
-are just values, we can pass our action as a function value.
+Pero, y si queremos hacer algo más que loggear los números?
+Ya que "hacer algo" se puede representar como una función y que las funciones
+solo son valores, podemos pasar nuestra acción como un valor de función.
 
 ```{includeCode: "top_lines: 5"}
-function repeat(n, action) {
+function repetir(n, accion) {
   for (let i = 0; i < n; i++) {
-    action(i);
+    accion(i);
   }
 }
 
-repeat(3, console.log);
+repetir(3, console.log);
 // → 0
 // → 1
 // → 2
 ```
 
-You don't have to pass a predefined function to `repeat`. Often, you'd
-want to create a function value on the spot instead.
+No es necesario que le pases una función predefinida a `repetir`. A menudo,
+desearas crear un valor de función al momento en su lugar.
 
 ```
-let labels = [];
-repeat(5, i => {
-  labels.push(`Unit ${i + 1}`);
+let etiquetas = [];
+repetir(5, i => {
+  etiquetas.push(`Unidad ${i + 1}`);
 });
-console.log(labels);
-// → ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5"]
+console.log(etiquetas);
+// → ["Unidad 1", "Unidad 2", "Unidad 3", "Unidad 4", "Unidad 5"]
 ```
 
 {{index "loop body", "curly braces"}}
 
-This is structured a little like a `for` loop—it first describes the
-kind of loop and then provides a body. However, the body is now written
-as a function value, which is wrapped in the ((parentheses)) of the
-call to `repeat`. This is why it has to be closed with the closing
-brace _and_ closing parenthesis. In cases like this example, where the
-body is a single small expression, you could also omit the curly
-braces and write the loop on a single line.
+Esto está estructurado un poco como un ciclo `for`—primero describe el
+tipo de ciclo, y luego provee un cuerpo. Sin embargo, el cuerpo ahora está escrito
+como un valor de función, que está envuelto en el ((paréntesis)) de la
+llamada a `repetir`. Por eso es que tiene que cerrarse con el corchete de cierre
+_y_ paréntesis de cierre. En casos como este ejemplo, donde el
+cuerpo es una expresión pequeña y única, podrias tambien omitir las
+llaves y escribir el ciclo en una sola línea.
 
-## Higher-order functions
+## Funciones de orden superior
 
 {{index [function, "higher-order"], [function, "as value"]}}
 
-Functions that operate on other functions, either by taking them as
-arguments or by returning them, are called _higher-order functions_.
-Since we have already seen that functions are regular values, there is
-nothing particularly remarkable about the fact that such functions
-exist. The term comes from ((mathematics)), where the distinction
-between functions and other values is taken more seriously.
+Las funciones que operan en otras funciones, ya sea tomándolas como
+argumentos o retornandolas, se denominan _funciones de orden superior_.
+Como ya hemos visto que las funciones son valores regulares, no existe
+nada particularmente notable sobre el hecho de que tales funciones
+existen. El término proviene de las ((matemáticas)), donde la distinción
+entre funciones y otros valores se toma más en serio.
 
 {{index abstraction}}
 
-Higher-order functions allow us to abstract over _actions_, not just
-values. They come in several forms. For example, you can have
-functions that create new functions.
+Las funciones de orden superior nos permiten abstraer sobre _acciones_,
+no solo sobre valores. Estas vienen en varias formas. Por ejemplo, puedes tener
+funciones que crean nuevas funciones.
 
 ```
-function greaterThan(n) {
+function mayorQue(n) {
   return m => m > n;
 }
-let greaterThan10 = greaterThan(10);
-console.log(greaterThan10(11));
+let mayorQue10 = mayorQue(10);
+console.log(mayorQue10(11));
 // → true
 ```
 
-And you can have functions that change other functions.
+Y puedes tener funciones que cambien otras funciones.
 
 ```
-function noisy(f) {
-  return (...args) => {
-    console.log("calling with", args);
-    let result = f(...args);
-    console.log("called with", args, ", returned", result);
-    return result;
+function ruidosa(funcion) {
+  return (...argumentos) => {
+    console.log("llamando con", argumentos);
+    let resultado = funcion(...argumentos);
+    console.log("llamada con", argumentos, ", retorno", resultado);
+    return resultado;
   };
 }
-noisy(Math.min)(3, 2, 1);
-// → calling with [3, 2, 1]
-// → called with [3, 2, 1] , returned 1
+ruidosa(Math.min)(3, 2, 1);
+// → llamando con [3, 2, 1]
+// → llamada con [3, 2, 1] , retorno 1
 ```
 
-You can even write functions that provide new types of ((control
-flow)).
+Incluso puedes escribir funciones que proporcionen nuevos tipos de
+((flujo de control)).
 
 ```
-function unless(test, then) {
-  if (!test) then();
+function aMenosQue(prueba, entonces) {
+  if (!prueba) entonces();
 }
 
-repeat(3, n => {
-  unless(n % 2 == 1, () => {
-    console.log(n, "is even");
+repetir(3, n => {
+  aMenosQue(n % 2 == 1, () => {
+    console.log(n, "es par");
   });
 });
-// → 0 is even
-// → 2 is even
+// → 0 es par
+// → 2 es par
 ```
 
 {{index [array, methods], [array, iteration], "forEach method"}}
 
-There is a built-in array method, `forEach` that provides something
-like a `for`/`of` loop as a higher-order function.
+Hay un método de array incorporado, `forEach` que proporciona algo
+como un ciclo `for`/`of` como una función de orden superior.
 
 ```
-["A", "B"].forEach(l => console.log(l));
+["A", "B"].forEach(letra => console.log(letra));
 // → A
 // → B
 ```
 
-## Script data set
+## Conjunto de datos de códigos
 
-One area where higher-order functions shine is data processing. In
-order to process data, we'll need some actual data. This chapter will
-use a ((data set)) about scripts—((writing system))s such as Latin,
-Cyrillic, or Arabic.
+Un área donde brillan las funciones de orden superior es en el
+procesamiento de datos. Para procesar datos, necesitaremos algunos datos reales.
+Este capítulo usara un ((conjunto de datos)) acerca de
+códigos—((sistema de escritura))s como Latin, Cirílico, o Arábico.
 
-Remember ((Unicode)) from [Chapter ?](values#unicode), the system that
-assigns a number to each character in written language. Most of these
-characters are associated with a specific script. The standard
-contains 140 different scripts—81 are still in use today, and 59
-are historic.
+Recuerdas ((Unicode)) del [Capítulo 1](valores#unicode), el sistema que
+asigna un número a cada carácter en el lenguaje escrito. La mayoría de estos
+carácteres están asociados a un código específico. El estandar
+contiene 140 codigos diferentes—81 de los cuales todavía están en uso hoy, y 59
+que son históricos.
 
-Though I can only fluently read Latin characters, I appreciate the
-fact that people are writing texts in at least 80 other writing
-systems, many of which I wouldn't even recognize. For example, here's
-a sample of ((Tamil)) handwriting.
+Aunque solo puedo leer con fluidez los caracteres en Latin, aprecio el
+hecho de que las personas estan escribiendo textos en al menos 80 diferentes
+sistemas de escritura, muchos de los cuales ni siquiera reconocería. Por ejemplo,
+aquí está una muestra de escritura a mano en ((Tamil)).
 
 {{figure {url: "img/tamil.png", alt: "Tamil handwriting"}}}
 
 {{index "SCRIPTS data set"}}
 
-The example ((data set)) contains some pieces of information about the
-140 scripts defined in Unicode. It is available in the [coding
-sandbox](https://eloquentjavascript.net/code#5) for this chapter[
+El ((conjunto de datos)) de ejemplo contiene algunos piezas de información
+acerca de los 140 codigos definidos en Unicode. Este esta disponible en la [caja de arena](https://eloquentjavascript.net/code#5) para este capítulo [
 ([_eloquentjavascript.net/code#5_](https://eloquentjavascript.net/code#5))]{if
-book} as the `SCRIPTS` binding. The binding contains an array of
-objects, each of which describes a script.
+book} como la vinculación `SCRIPTS`. La vinculación contiene un array de
+objetos, cada uno de los cuales describe un codigo.
 
 
 ```{lang: "application/json"}
@@ -313,129 +316,131 @@ objects, each of which describes a script.
 }
 ```
 
-Such an object tells you the name of the script, the Unicode ranges
-assigned to it, the direction in which it is written, the
-(approximate) origin time, whether it is still in use, and a link to
-more information. Direction may be `"ltr"` for left-to-right, `"rtl"`
-for right-to-left (the way Arabic and Hebrew text are written), or
-`"ttb"` for top-to-bottom (as with Mongolian writing).
+Tal objeto te dice el nombre del codigo, los rangos de Unicode
+asignados a él, la dirección en la que está escrito, la
+tiempo de origen (aproximado), si todavía está en uso, y un enlace a
+más información. La dirección en la que esta escrito puede ser
+`"ltr"` (left-to-right) para izquierda a derecha, `"rtl"` (right-to-left)
+para derecha a izquierda (la forma en que se escriben los textos en árabe
+y en hebreo), o `"ttb"` (top-to-bottom) para de arriba a abajo
+(como con la escritura de Mongolia).
 
 {{index "slice method"}}
 
-The `ranges` property contains an array of Unicode character
-((range))s, each of which is a two-element array containing a lower
-and upper bound. Any character codes within these ranges are assigned
-to the script. The lower ((bound)) is inclusive (code 994 is a Coptic
-character), and the upper bound non-inclusive (code 1008 isn't).
+La propiedad `ranges` contiene un array de ((rango))s de caracteres Unicode,
+cada uno de los cuales es un array de dos elementos que contiene límites inferior
+y superior. Se asignan los códigos de caracteres dentro de estos rangos
+al codigo. El ((limite)) más bajo es inclusivo (el código 994 es un carácter Copto)
+y el límite superior es no-inclusivo (el código 1008 no lo es).
 
-## Filtering arrays
+## Filtrando arrays
 
 {{index [array, methods], [array, filtering], "filter method", [function, "higher-order"], "predicate function"}}
 
-To find the scripts in the data set that are still in use, the
-following function might be helpful. It filters out the elements in an
-array that don't pass a test:
+Para encontrar los codigos en el conjunto de datos que todavía están en uso,
+la siguiente función podría ser útil. Filtra hacia afuera los elementos en un
+array que no pasen una prueba:
 
 ```
-function filter(array, test) {
-  let passed = [];
-  for (let element of array) {
-    if (test(element)) {
-      passed.push(element);
+function filtrar(array, prueba) {
+  let pasaron = [];
+  for (let elemento of array) {
+    if (prueba(elemento)) {
+      pasaron.push(elemento);
     }
   }
-  return passed;
+  return pasaron;
 }
 
-console.log(filter(SCRIPTS, script => script.living));
+console.log(filtrar(SCRIPTS, codigo => codigo.living));
 // → [{name: "Adlam", …}, …]
 ```
 
 {{index [function, "as value"], [function, application]}}
 
-The function uses the argument named `test`, a function value, to fill
-a "gap" in the computation—the process of deciding which elements to
-collect.
+La función usa el argumento llamado `prueba`, un valor de función, para llenar
+una "brecha" en el cálculo—el proceso de decidir qué elementos recolectar.
 
 {{index "filter method", "pure function", "side effect"}}
 
-Note how the `filter` function, rather than deleting elements from the
-existing array, builds up a new array with only the elements that pass
-the test. This function is _pure_. It does not modify the array it is
-given.
+Observa cómo la función `filtrar`, en lugar de eliminar elementos del
+array existente, crea un nuevo array solo con los elementos que pasan
+la prueba. Esta función es _pura_. No modifica el array que se le es
+dado.
 
-Like `forEach`, `filter` is a ((standard)) array method. The example
-defined the function only in order to show what it does internally.
-From now on, we'll use it like this instead:
+Al igual que `forEach`, `filtrar` es un método de array ((estándar)), este
+esta incorporado como `filter`.
+El ejemplo definió la función solo para mostrar lo que hace internamente.
+A partir de ahora, la usaremos así en su lugar:
 
 ```
-console.log(SCRIPTS.filter(s => s.direction == "ttb"));
+console.log(SCRIPTS.filter(codigo => codigo.direction == "ttb"));
 // → [{name: "Mongolian", …}, …]
 ```
 
 {{id map}}
 
-## Transforming with map
+## Transformando con map
 
 {{index [array, methods], "map method"}}
 
-Say we have an array of objects representing scripts, produced by
-filtering the `SCRIPTS` array somehow. But we want an array of names,
-which is easier to inspect.
+Digamos que tenemos un array de objetos que representan codigos, producidos al
+filtrar el array `SCRIPTS` de alguna manera. Pero queremos un array de nombres,
+que es más fácil de inspeccionar
 
 {{index [function, "higher-order"]}}
 
-The `map` method transforms an array by applying a function to all of
-its elements and building a new array from the returned values. The
-new array will have the same length as the input array, but its
-content will have been _mapped_ to a new form by the function.
+El método `map` ("mapear") transforma un array al aplicar una función a todos
+sus elementos y construir un nuevo array a partir de los valores retornados.
+El nuevo array tendrá la misma longitud que el array de entrada, pero su
+contenido ha sido _mapeado_ a una nueva forma en base a la función.
 
 ```
-function map(array, transform) {
-  let mapped = [];
-  for (let element of array) {
-    mapped.push(transform(element));
+function map(array, transformar) {
+  let mapeados = [];
+  for (let elemento of array) {
+    mapeados.push(transformar(elemento));
   }
-  return mapped;
+  return mapeados;
 }
 
-let rtlScripts = SCRIPTS.filter(s => s.direction == "rtl");
-console.log(map(rtlScripts, s => s.name));
+let codigosDerechaAIzquierda = SCRIPTS.filter(codigo => codigo.direction == "rtl");
+console.log(map(codigosDerechaAIzquierda, codigo => codigo.name));
 // → ["Adlam", "Arabic", "Imperial Aramaic", …]
 ```
 
-Like `forEach` and `filter`, `map` is a standard array method.
+Al igual que `forEach` y `filter`, `map` es un método de array estándar.
 
-## Summarizing with reduce
+## Resumiendo con reduce
 
 {{index [array, methods], "summing example", "reduce method"}}
 
-Another common thing to do with arrays is computing a single value
-from them. Our recurring example, summing a collection of numbers, is
-an instance of this. Another example would be finding the script with
-the most characters.
+Otra cosa común que hacer con arrays es calcular un valor único a partir
+de ellos. Nuestro ejemplo recurrente, sumar una colección de números, es
+una instancia de esto. Otro ejemplo sería encontrar el codigo con
+la mayor cantidad de caracteres.
 
 {{indexsee "fold", "reduce method"}}
 
 {{index [function, "higher-order"], "reduce method"}}
 
-The higher-order operation that represents this pattern is called
-_reduce_ (sometimes also called _fold_). It builds a value by
-repeatedly taking a single element from the array and combining it
-with the current value. When summing numbers, you'd start with the
-number zero and, for each element, add that to the sum.
+La operación de orden superior que representa este patrón se llama
+_reduce_ ("reducir")—a veces también llamada _fold_ ("doblar").
+Esta construye un valor al repetidamente tomar un solo elemento del
+array y combinándolo con el valor actual. Al sumar números, comenzarías con el
+número cero y, para cada elemento, agregas eso a la suma.
 
-The parameters to `reduce` are, apart from the array, a combining
-function and a start value. This function is a little less
-straightforward than `filter` and `map`, so look closely:
+Los parámetros para `reduce` son, además del array, una función de combinación
+y un valor de inicio. Esta función es un poco menos sencilla que `filter`
+y `map`, así que mira atentamente:
 
 ```
-function reduce(array, combine, start) {
-  let current = start;
-  for (let element of array) {
-    current = combine(current, element);
+function reduce(array, combinar, inicio) {
+  let actual = inicio;
+  for (let elemento of array) {
+    actual = combinar(actual, elemento);
   }
-  return current;
+  return actual;
 }
 
 console.log(reduce([1, 2, 3, 4], (a, b) => a + b, 0));
@@ -444,11 +449,11 @@ console.log(reduce([1, 2, 3, 4], (a, b) => a + b, 0));
 
 {{index "reduce method", "SCRIPTS data set"}}
 
-The standard array method `reduce`, which of course corresponds to
-this function, has an added convenience. If your array contains at
-least one element, you are allowed to leave off the `start` argument.
-The method will take the first element of the array as its start value
-and start reducing at the second element.
+El método de array estándar `reduce`, que por supuesto corresponde a
+esta función tiene una mayor comodidad. Si tu array contiene
+al menos un elemento, tienes permitido omitir el argumento `inicio`.
+El método tomará el primer elemento del array como su valor de inicio
+y comienza a reducir a partir del segundo elemento.
 
 ```
 console.log([1, 2, 3, 4].reduce((a, b) => a + b));
@@ -457,36 +462,36 @@ console.log([1, 2, 3, 4].reduce((a, b) => a + b));
 
 {{index maximum, "characterCount function"}}
 
-To use `reduce` (twice) to find the script with the most characters,
-we can write something like this:
+Para usar `reduce` (dos veces) para encontrar el codigo con la mayor
+cantidad de caracteres, podemos escribir algo como esto:
 
 ```
-function characterCount(script) {
-  return script.ranges.reduce((count, [from, to]) => {
-    return count + (to - from);
+function cuentaDeCaracteres(codigo) {
+  return codigo.ranges.reduce((cuenta, [desde, hasta]) => {
+    return cuenta + (hasta - desde);
   }, 0);
 }
 
 console.log(SCRIPTS.reduce((a, b) => {
-  return characterCount(a) < characterCount(b) ? b : a;
+  return cuentaDeCaracteres(a) < cuentaDeCaracteres(b) ? b : a;
 }));
 // → {name: "Han", …}
 ```
 
-The `characterCount` function reduces the ranges assigned to a script
-by summing their sizes. Note the use of destructuring in the parameter
-list of the reducer function. The second call to `reduce` then uses
-this to find the largest script by repeatedly comparing two scripts
-and returning the larger one.
+La función `cuentaDeCaracteres` reduce los rangos asignados a un codigo
+sumando sus tamaños. Ten en cuenta el uso de la desestructuración en el parámetro
+lista de la función reductora. La segunda llamada a `reduce` luego usa
+esto para encontrar el codigo más grande al comparar repetidamente dos scripts
+y retornando el más grande.
 
-The Han script has over 89,000 characters assigned to it in the
-Unicode standard, making it by far the biggest writing system in the
-data set. Han is a script (sometimes) used for Chinese, Japanese, and
-Korean text. Those languages share a lot of characters, though they
-tend to write them differently. The (US-based) Unicode Consortium
-decided to treat them as a single writing system in order to save
-character codes. This is called _Han unification_ and still makes some
-people very angry.
+El codigo Han tiene más de 89,000 caracteres asignados en el
+Estándar Unicode, por lo que es, por mucho, el mayor sistema de escritura en el
+conjunto de datos. Han es un codigo (a veces) usado para texto chino, japonés y
+coreano. Esos idiomas comparten muchos caracteres, aunque
+tienden a escribirlos de manera diferente. El consorcio Unicode (con sede en EE.UU.)
+decidió tratarlos como un único sistema de escritura para ahorrar
+códigos de caracteres. Esto se llama _unificación Han_ y aún enoja bastante a
+algunas personas.
 
 ## Composability
 
