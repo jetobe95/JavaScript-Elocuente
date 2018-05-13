@@ -493,329 +493,328 @@ decidió tratarlos como un único sistema de escritura para ahorrar
 códigos de caracteres. Esto se llama _unificación Han_ y aún enoja bastante a
 algunas personas.
 
-## Composability
+## Composabilidad
 
 {{index loop, maximum}}
 
-Consider how we would have written the previous example (finding the
-biggest script) without higher-order functions. The code is not that
-much worse.
+Considera cómo habríamos escrito el ejemplo anterior (encontrar el
+código más grande) sin funciones de orden superior. El código no es
+mucho peor.
 
 ```{test: no}
-let biggest = null;
-for (let script of SCRIPTS) {
-  if (biggest == null ||
-      characterCount(biggest) < characterCount(script)) {
-    biggest = script;
+let mayor = null;
+for (let codigo of SCRIPTS) {
+  if (mayor == null ||
+      cuentaDeCaracteres(mayor) < cuentaDeCaracteres(codigo)) {
+    mayor = codigo;
   }
 }
-console.log(biggest);
+console.log(mayor);
 // → {name: "Han", …}
 ```
 
-There are a few more ((binding))s, and the program is four lines
-longer. But it is still very readable.
+Hay algunos vinculaciones más, y el programa tiene cuatro líneas
+más. Pero todavía es bastante legible.
 
 {{index "average function", composability, [function, "higher-order"], "filter method", "map method", "reduce method"}}
 
 {{id average_function}}
 
-Higher-order functions start to shine when you need to _compose_
-operations. As an example, let's write code that finds the average
-year of origin for living and dead scripts in the data set.
+Las funciones de orden superior comienzan a brillar cuando necesitas _componer_
+operaciones. Como ejemplo, vamos a escribir código que encuentre el
+año de origen promedio para los codigos vivos y muertos en el conjunto de datos.
 
 ```
-function average(array) {
+function promedio(array) {
   return array.reduce((a, b) => a + b) / array.length;
 }
 
-console.log(Math.round(average(
-  SCRIPTS.filter(s => s.living).map(s => s.year))));
+console.log(Math.round(promedio(
+  SCRIPTS.filter(codigo => codigo.living).map(codigo => codigo.year))));
 // → 1185
-console.log(Math.round(average(
-  SCRIPTS.filter(s => !s.living).map(s => s.year))));
+console.log(Math.round(promedio(
+  SCRIPTS.filter(codigo => !codigo.living).map(codigo => codigo.year))));
 // → 209
 ```
 
-So the dead scripts in Unicode are, on average, older than the living
-ones. This is not a terribly meaningful or surprising statistic. But I
-hope you'll agree that the code used to compute it isn't hard to read.
-You can see it as a pipeline: we start with all scripts, filter out
-the living (or dead) ones, take the years from those, average them,
-and round the result.
+Entonces, los codigos muertos en Unicode son, en promedio, más antiguos que
+los vivos. Esta no es una estadística terriblemente significativa o sorprendente.
+Pero espero que aceptes que el código utilizado para calcularlo no es difícil
+de leer. Puedes verlo como una tubería: comenzamos con todos los codigos, filtramos
+los vivos (o muertos), tomamos los años de aquellos, los promediamos,
+y redondeamos el resultado.
 
-You could definitely also write this computation as one big ((loop)).
+Definitivamente también podrías haber escribir este codigo como un gran ((ciclo)).
 
 ```
-let total = 0, count = 0;
-for (let script of SCRIPTS) {
-  if (script.living) {
-    total += script.year;
-    count += 1;
+let total = 0, cuenta = 0;
+for (let codigo of SCRIPTS) {
+  if (codigo.living) {
+    total += codigo.year;
+    cuenta += 1;
   }
 }
-console.log(Math.round(total / count));
+console.log(Math.round(total / cuenta));
 // → 1185
 ```
 
-But it is harder to see what was being computed and how. And because
-intermediate results aren't represented as coherent values, it'd be a
-lot more work to extract something like `average` into a separate
-function.
+Pero es más difícil de ver qué se está calculando y cómo. Y ya que
+los resultados intermedios no se representan como valores coherentes, sería
+mucho más trabajo extraer algo así como `promedio` en una función aparte.
 
 {{index efficiency}}
 
-In terms of what the computer is actually doing, these two approaches
-are also quite different. The first will build up new ((array))s when
-running `filter` and `map`, whereas the second only computes some
-numbers, doing less work. You can usually afford the readable
-approach, but if you're processing huge arrays, and doing so many
-times, the less abstract style might be worth the extra speed.
+En términos de lo que la computadora realmente está haciendo, estos dos enfoques
+también son bastante diferentes. El primero creará nuevos ((arrays)) al
+ejecutar `filter` y `map`, mientras que el segundo solo computa algunos
+números, haciendo menos trabajo. Por lo general, puedes permitirte el
+enfoque legible, pero si estás procesando arrays enormes, y haciendolo muchas
+veces, el estilo menos abstracto podría ser mejor debido a la velocidad extra.
 
-## Strings and character codes
+## Strings y códigos de caracteres
 
 {{index "SCRIPTS data set"}}
 
-One use of the data set would be figuring out what script a piece of
-text is using. Let's go through a program that does this.
+Un uso del conjunto de datos sería averiguar qué código esta usando una
+pieza de texto. Veamos un programa que hace esto.
 
-Remember that each script has an array of character code ranges
-associated with it. So given a character code, we could use a function
-like this to find the corresponding script (if any):
+Recuerda que cada codigo tiene un array de rangos para los códigos de caracteres
+asociados a el. Entonces, dado un código de carácter, podríamos usar una
+función como esta para encontrar el codigo correspondiente (si lo hay):
 
 {{index "some method", "predicate function", [array, methods]}}
 
 ```{includeCode: strip_log}
-function characterScript(code) {
-  for (let script of SCRIPTS) {
-    if (script.ranges.some(([from, to]) => {
-      return code >= from && code < to;
+function codigoCaracter(codigo_caracter) {
+  for (let codigo of SCRIPTS) {
+    if (codigo.ranges.some(([desde, hasta]) => {
+      return codigo_caracter >= desde && codigo_caracter < hasta;
     })) {
-      return script;
+      return codigo;
     }
   }
   return null;
 }
 
-console.log(characterScript(121));
+console.log(codigoCaracter(121));
 // → {name: "Latin", …}
 ```
 
-The `some` method is another higher-order function. It takes a test
-function and tells you if that function returns true for any of the
-elements in the array.
+El método `some` ("alguno") es otra función de orden superior. Toma una función
+de prueba y te dice si esa función retorna verdadero para cualquiera de los
+elementos en el array.
 
 {{id code_units}}
 
-But how do we get the character codes in a string?
+Pero cómo obtenemos los códigos de los caracteres en un string?
 
-In [Chapter ?](values) I mentioned that JavaScript ((string))s are
-encoded as a sequence of 16-bit numbers. These are called _((code
-unit))s_. A ((Unicode)) ((character)) code was initially supposed to
-fit within such a unit (which gives you a little over 65,000
-characters). When it became clear that wasn't going to be enough, many
-people balked at the need to use more memory per character. To address
-these concerns, ((UTF-16)), the format used by JavaScript strings, was
-invented. It describes most common characters using a single 16-bit
-code unit, but uses a pair of two such units for others.
+En el [Capítulo 1](valores) mencioné que los ((strings)) de JavaScript estan
+codificados como una secuencia de números de 16 bits. Estos se llaman
+_((unidades de código))_. Inicialmente se suponía que un código de ((carácter))
+((Unicode)) encajara dentro de esa unidad (lo que da un poco más de 65,000
+caracteres). Cuando quedó claro que esto no seria suficiente, muchas
+las personas se resistieron a la necesidad de usar más memoria por carácter.
+Para apaciguar estas preocupaciones, ((UTF-16)), el formato utilizado por los
+strings de JavaScript, fue inventado. Este describe la mayoría de los caracteres
+mas comunes usando una sola unidad de código de 16 bits, pero usa un par de
+dos de esas unidades para otros caracteres.
 
 {{index error}}
 
-UTF-16 is generally considered a bad idea today. It seems almost
-intentionally designed to invite mistakes. It's easy to write programs
-that pretend code units and characters are the same thing. And if your
-language doesn't use two-unit characters, that will appear to work
-just fine. But as soon as someone tries to use such a program with
-some less common ((Chinese characters)), it breaks. Fortunately, with
-the advent of ((emoji)), everybody has started using two-unit
-characters, and the burden of dealing with such problems is more
-fairly distributed.
+Al dia de hoy UTF-16 generalmente se considera como una mala idea. Parece casi
+intencionalmente diseñado para invitar a errores. Es fácil escribir programas
+que pretenden que las unidades de código y caracteres son la misma cosa. Y si tu
+lenguaje no usa caracteres de dos unidades, esto parecerá funcionar
+simplemente bien. Pero tan pronto como alguien intente usar dicho programa con
+algunos menos comunes ((caracteres chinos)), este se rompe. Afortunadamente, con
+la llegada del ((emoji)), todo el mundo ha empezado a usar caracteres de
+dos unidades, y la carga de lidiar con tales problemas esta
+bastante mejor distribuida.
 
 {{index [string, length], [string, indexing], "charCodeAt method"}}
 
-Unfortunately, obvious operations on JavaScript strings, such as
-getting their length through the `length` property and accessing their
-content using square brackets, deal only with code units.
+Desafortunadamente, las operaciones obvias con strings de JavaScript, como
+obtener su longitud a través de la propiedad `length` y acceder a su
+contenido usando corchetes, trata solo con unidades de código.
 
 ```{test: no}
-// Two emoji characters, horse and shoe
-let horseShoe = "🐴👟";
-console.log(horseShoe.length);
+// Dos caracteres emoji, caballo y zapato
+let caballoZapato = "🐴👟";
+console.log(caballoZapato.length);
 // → 4
-console.log(horseShoe[0]);
-// → (Invalid half-character)
-console.log(horseShoe.charCodeAt(0));
-// → 55357 (Code of the half-character)
-console.log(horseShoe.codePointAt(0));
-// → 128052 (Actual code for horse emoji)
+console.log(caballoZapato[0]);
+// → ((Medio-carácter inválido))
+console.log(caballoZapato.charCodeAt(0));
+// → 55357 (Código del medio-carácter)
+console.log(caballoZapato.codePointAt(0));
+// → 128052 (Código real para emoji de caballo)
 ```
 
 {{index "codePointAt method"}}
 
-JavaScript's `charCodeAt` method gives you a code unit, not a full
-character code. The `codePointAt` method, added later, does give a
-full Unicode character. So we could use that to get characters from a
-string. But the argument passed to `codePointAt` is still an index
-into the sequence of code units. So to run over all characters in a
-string, we'd still need to deal with the question of whether a
-character takes up one or two code units.
+El método `charCodeAt` de JavaScript te da una unidad de código, no un
+código de carácter completo. El método `codePointAt`, añadido despues, si da un
+carácter completo de Unicode. Entonces podríamos usarlo para obtener
+caracteres de un string. Pero el argumento pasado a `codePointAt` sigue
+siendo un índice en la secuencia de unidades de código. Entonces, para hacer
+un ciclo a traves de todos los caracteres en un string, todavía tendríamos que
+lidiar con la cuestión de si un carácter ocupa una o dos unidades de código.
 
 {{index "for/of loop", character}}
 
-In the [previous chapter](data#for_of_loop), I mentioned that a
-`for`/`of` loop can also be used on strings. Like `codePointAt`, this
-type of loop was introduced at a time where people were acutely aware
-of the problems with UTF-16. When you use it to loop over a string, it
-gives you real characters, not code units.
+En el [capítulo anterior](datos#for_of_loop), mencioné que el ciclo
+`for`/`of` también se puede usar en strings. Como `codePointAt`, este
+tipo de ciclo se introdujo en un momento en que las personas eran muy
+conscientes de los problemas con UTF-16. Cuando lo usas para hacer un ciclo
+a traves de un string, te da caracteres reales, no unidades de código.
 
 ```
-let roseDragon = "🌹🐉";
-for (let char of roseDragon) {
-  console.log(char);
+let dragonRosa = "🐉🌹";
+for (let caracter of dragonRosa) {
+  console.log(caracter);
 }
-// → 🌹
 // → 🐉
+// → 🌹
 ```
 
-If you have a character (which will be a string of one or two code
-units), you can use `codePointAt(0)` to get its code.
+Si tienes un caracter (que será un string de unidades de uno o dos códigos),
+puedes usar `codePointAt(0)` para obtener su código.
 
-## Recognizing text
+## Reconociendo texto
 
 {{index "SCRIPTS data set", "countBy function", array}}
 
-We have a `characterScript` function and a way to correctly loop over
-characters. The next step would be to count the characters that belong
-to each script. The following counting abstraction will be useful
-there:
+Tenemos una función `codigoCaracter` y una forma de correctamente hacer un
+ciclo a traves de caracteres. El siguiente paso sería contar los caracteres
+que pertenecen a cada codigo. La siguiente abstracción de conteo será útil
+para eso:
 
 ```{includeCode: strip_log}
-function countBy(items, groupName) {
-  let counts = [];
-  for (let item of items) {
-    let name = groupName(item);
-    let known = counts.findIndex(c => c.name == name);
-    if (known == -1) {
-      counts.push({name, count: 1});
+function contarPor(elementos, nombreGrupo) {
+  let cuentas = [];
+  for (let elemento of elementos) {
+    let nombre = nombreGrupo(elemento);
+    let conocido = cuentas.findIndex(c => c.nombre == nombre);
+    if (conocido == -1) {
+      cuentas.push({nombre, cuenta: 1});
     } else {
-      counts[known].count++;
+      cuentas[conocido].cuenta++;
     }
   }
-  return counts;
+  return cuentas;
 }
 
-console.log(countBy([1, 2, 3, 4, 5], n => n > 2));
-// → [{name: false, count: 2}, {name: true, count: 3}]
+console.log(contarPor([1, 2, 3, 4, 5], n => n > 2));
+// → [{nombre: false, cuenta: 2}, {nombre: true, cuenta: 3}]
 ```
 
-The `countBy` function expects a collection (anything that we can loop
-over with `for`/`of`) and a function that computes a group name for a
-given element. It returns an array of
-objects, each of which names a group and tells you the amount of
-elements that were found in that group.
+La función `contarPor` espera una colección (cualquier cosa con la que podamos
+hacer un ciclo `for`/`of`) y una función que calcula un nombre de grupo para un
+elemento dado. Retorna un array de objetos, cada uno de los cuales nombra un
+grupo y te dice la cantidad de elementos que se encontraron en ese grupo.
 
 {{index "findIndex method", "indexOf method"}}
 
-It uses another array method—`findIndex`. This method is somewhat like
-`indexOf`, but instead of looking for a specific value, it finds the
-first value for which the given function returns true. Like `indexOf`,
-it returns -1 when no such element is found.
+Utiliza otro método de array—`findIndex` ("encontrar index"). Este método es
+algo así como `indexOf`, pero en lugar de buscar un valor específico, este
+encuentra el primer valor para el cual la función dada retorna verdadero.
+Como `indexOf`, retorna -1 cuando no se encuentra dicho elemento.
 
 {{index "textScripts function", "Chinese characters"}}
 
-Using `countBy`, we can write the function that tells us which scripts
-are used in a piece of text.
+Usando `contarPor`, podemos escribir la función que nos dice qué codigos
+se usan en una pieza de texto.
 
 ```{includeCode: strip_log, startCode: true}
-function textScripts(text) {
-  let scripts = countBy(text, char => {
-    let script = characterScript(char.codePointAt(0));
-    return script ? script.name : "none";
-  }).filter(({name}) => name != "none");
+function codigosTexto(texto) {
+  let codigos = contarPor(texto, caracter => {
+    let codigo = codigoCaracter(caracter.codePointAt(0));
+    return codigo ? codigo.name : "ninguno";
+  }).filter(({name}) => name != "ninguno");
 
-  let total = scripts.reduce((n, {count}) => n + count, 0);
-  if (total == 0) return "No scripts found";
+  let total = codigos.reduce((n, {count}) => n + count, 0);
+  if (total == 0) return "No se encontraron codigos";
 
-  return scripts.map(({name, count}) => {
+  return codigos.map(({name, count}) => {
     return `${Math.round(count * 100 / total)}% ${name}`;
   }).join(", ");
 }
 
-console.log(textScripts('英国的狗说"woof", 俄罗斯的狗说"тяв"'));
+console.log(codigosTexto('英国的狗说"woof", 俄罗斯的狗说"тяв"'));
 // → 61% Han, 22% Latin, 17% Cyrillic
 ```
 
 {{index "characterScript function", "filter method"}}
 
-The function first counts the characters by name, using
-`characterScript` to assign them a name, and falling back to the
-string `"none"` for characters that aren't part of any script. The
-`filter` call drops the entry for `"none"` from the resulting array,
-since we aren't interested in those characters.
+La función primero cuenta los caracteres por nombre, usando
+`codigoCaracter` para asignarles un nombre, y recurre al
+string `"ninguno"` para caracteres que no son parte de ningún codigo.
+La llamada `filter` deja afuera las entrada para `"ninguno"` del array resultante,
+ya que no estamos interesados ​​en esos caracteres.
 
 {{index "reduce method", "map method", "join method", [array, methods]}}
 
-To be able to compute ((percentage))s, we first need the total amount
-of characters that belong to a script, which we can compute with
-`reduce`. If no such characters are found, the function returns a
-specific string. Otherwise, it transforms the counting entries into
-readable strings with `map` and then combines them with `join`.
+Para poder calcular ((porcentaje))s, primero necesitamos la cantidad total
+de caracteres que pertenecen a un codigo, lo que podemos calcular con
+`reduce`. Si no se encuentran tales caracteres, la función retorna un
+string específico. De lo contrario, transforma las entradas de conteo en
+strings legibles con `map` y luego las combina con `join`.
 
-## Summary
+## Resumen
 
-Being able to pass function values to other functions is a deeply
-useful aspect of JavaScript. It allows us to write functions that
-model computations with "gaps" in them. The code that calls these
-functions can fill in the gaps by providing function values.
+Ser capaz de pasar valores de función a otras funciones es un aspecto
+profundamente útil de JavaScript. Nos permite escribir funciones que
+modelen calculos con "brechas" en ellas. El código que llama a estas
+funciones pueden llenar estas brechas al proporcionar valores de función.
 
-Arrays provide a number of useful higher-order methods. You can use
-`forEach` to loop over the elements in an array. The `filter` method
-returns a new array containing only the elements that pass the
-((predicate function)). Transforming an array by putting each element
-through a function is done with `map`. You can use `reduce` to combine
-all the elements in an array into a single value. The `some` method
-tests whether any element matches a given predicate function. And
-`findIndex` finds the position of the first element that matches a
-predicate.
+Los arrays proporcionan varios métodos útiles de orden superior. Puedes usar
+`forEach` para recorrer los elementos en un array. El método `filter`
+retorna un nuevo array que contiene solo los elementos que pasan una
+((función de predicado)). Transformar un array al poner cada elemento
+a través de una función se hace con `map`. Puedes usar `reduce` para combinar
+todos los elementos en una array a un solo valor. El método `some`
+prueba si algun elemento coincide con una función de predicado determinada. Y
+`findIndex` encuentra la posición del primer elemento que coincide con un
+predicado.
 
-## Exercises
+## Ejercicios
 
-### Flattening
+### Aplanamiento
 
 {{index "flattening (exercise)", "reduce method", "concat method", array}}
 
-Use the `reduce` method in combination with the `concat` method to
-"flatten" an array of arrays into a single array that has all the
-elements of the original arrays.
+Use el método `reduce` en combinación con el método `concat` para
+"aplanar" un array de arrays en un único array que tenga todos los
+elementos de los arrays originales.
 
 {{if interactive
 
 ```{test: no}
 let arrays = [[1, 2, 3], [4, 5], [6]];
-// Your code here.
+// Tu código aquí.
 // → [1, 2, 3, 4, 5, 6]
 ```
 if}}
 
-### Your own loop
+### Tu propio ciclo
 
 {{index "your own loop (example)", "for loop"}}
 
-Write a higher-order function `loop` that provides something like a
-`for` loop statement. It takes a value, a test function, an update
-function, and a body function. Each iteration, it first runs the test
-function on the current loop value and stops if that returns false.
-Then it calls the body function, giving it the current value. And
-finally, it calls the update function to create a new value and
-starts from the beginning.
+Escriba una función de orden superior llamada `ciclo` que proporcione algo así
+como una declaración de ciclo `for`. Esta toma un valor, una función de prueba,
+una función de actualización y un cuerpo de función. En cada iteración,
+primero ejecuta la función de prueba en el valor actual del ciclo y se detiene
+si esta retorna falso. Luego llama al cuerpo de función, dándole el valor
+actual. Y finalmente, llama a la función de actualización para crear un nuevo
+valor y comienza desde el principio.
 
-When defining the function, you can use a regular loop to do the
-actual looping.
+Cuando definas la función, puedes usar un ciclo regular para hacer los
+ciclos reales.
 
 {{if interactive
 
 ```{test: no}
-// Your code here.
+// Tu código aquí.
 
 loop(3, n => n > 0, n => n - 1, console.log);
 // → 3
@@ -825,31 +824,31 @@ loop(3, n => n > 0, n => n - 1, console.log);
 
 if}}
 
-### Everything
+### Cada
 
 {{index "predicate function", "everything (exercise)", "every method", "some method", [array, methods], "&& operator", "|| operator"}}
 
-Analogous to the `some` method, arrays also have an `every` method.
-This one returns true when the given function returns true for _every_
-element in the array. In a way, `some` is a version of the `||`
-operator that acts on arrays, and `every` is like the `&&` operator.
+De forma análoga al método `some`, los arrays también tienen un método `every`
+("cada"). Este retorna true cuando la función dada devuelve verdadero
+para _cada_ elemento en el array. En cierto modo, `some` es una versión
+del operador `||` que actúa en arrays, y `every` es como el operador `&&`.
 
-Implement `every` as a function that takes an array and a predicate
-function as parameters. Write two versions, one using a loop and one
-using the `some` method.
+Implementa `every` como una función que tome un array y una función predicado
+como parámetros. Escribe dos versiones, una usando un ciclo y una
+usando el método `some`.
 
 {{if interactive
 
 ```{test: no}
-function every(array, test) {
-  // Your code here.
+function cada(array, test) {
+  // Tu código aquí.
 }
 
-console.log(every([1, 3, 5], n => n < 10));
+console.log(cada([1, 3, 5], n => n < 10));
 // → true
-console.log(every([2, 4, 16], n => n < 10));
+console.log(cada([2, 4, 16], n => n < 10));
 // → false
-console.log(every([], n => n < 10));
+console.log(cada([], n => n < 10));
 // → true
 ```
 
@@ -859,47 +858,47 @@ if}}
 
 {{index "everything (exercise)", "short-circuit evaluation", "return keyword"}}
 
-Like the `&&` operator, the `every` method can stop evaluating further
-elements as soon as it has found one that doesn't match. So the
-loop-based version can jump out of the loop—with `break` or
-`return`—as soon as it runs into an element for which the predicate
-function returns false. If the loop runs to its end without finding
-such an element, we know that all elements matched and we should
-return true.
+Al igual que el operador `&&`, el método `every` puede dejar de evaluar más
+elementos tan pronto como haya encontrado uno que no coincida. Entonces
+la versión basada en un ciclo puede saltar fuera del ciclo—con `break` o
+`return`—tan pronto como se encuentre con un elemento para el cual la función
+predicado retorne falso. Si el ciclo corre hasta su final sin encontrar
+tal elemento, sabemos que todos los elementos coinciden y debemos
+retornar verdadero.
 
-To build `every` on top of `some`, we can apply _((De Morgan's
-laws))_, which state that `a && b` equals `!(!a || !b)`. This can be
-generalized to arrays, where all elements in the array match if there
-is no element in the array that does not match.
+Para construir `cada` usando `some`, podemos aplicar las _((leyes De
+Morgan))_, que establecen que `a && b` es igual a `!(!a ||! b)`. Esto puede ser
+generalizado a arrays, donde todos los elementos del array coinciden si no hay
+elemento en el array que no coincida.
 
 hint}}
 
-### Dominant writing direction
+### Dirección de Escritura Dominante
 
 {{index "SCRIPTS data set", "direction (writing)", "groupBy function", "dominant direction (exercise)"}}
 
-Write a function that computes the dominant writing direction in a
-string of text. Remember that each script object has a `direction`
-property that can be `"ltr"` (left-to-right), `"rtl"` (right-to-left),
-or `"ttb"` (top-to-bottom).
+Escriba una función que calcule la dirección de escritura dominante en un
+string de texto. Recuerde que cada objeto de codigo tiene una propiedad
+`direction` que puede ser `"ltr"` (de izquierda a derecha), `"rtl"`
+(de derecha a izquierda), o `"ttb"` (arriba a abajo).
 
 {{index "characterScript function", "countBy function"}}
 
-The dominant direction is the direction of a majority of the
-characters that have a script associated with them. The
-`characterScript` and `countBy` functions defined earlier in the
-chapter are probably useful here.
+La dirección dominante es la dirección de la mayoría de los
+caracteres que tienen un código asociado a ellos. Las funciones
+`codigoCaracter` y `contarPor` definidas anteriormente en el
+capítulo probablemente seran útiles aquí.
 
 {{if interactive
 
 ```{test: no}
-function dominantDirection(text) {
-  // Your code here.
+function direccionDominante(texto) {
+  // Tu código aquí.
 }
 
-console.log(dominantDirection("Hello!"));
+console.log(direccionDominante("Hola!"));
 // → ltr
-console.log(dominantDirection("Hey, مساء الخير"));
+console.log(direccionDominante("Hey, مساء الخير"));
 // → rtl
 ```
 if}}
@@ -908,16 +907,16 @@ if}}
 
 {{index "dominant direction (exercise)", "textScripts function", "filter method", "characterScript function"}}
 
-Your solution might look a lot like the first half of the
-`textScripts` example. You again have to count characters by a
-criterion based on `characterScript`, and then filter out the part of
-the result that refers to uninteresting (script-less characters).
+Tu solución puede parecerse mucho a la primera mitad del
+ejemplo `codigosTexto`. De nuevo debes contar los caracteres por el
+criterio basado en `codigoCaracter`, y luego filtrar hacia afuera la parte del
+resultado que se refiere a caracteres sin interés (que no tengan codigos).
 
 {{index "reduce method"}}
 
-Finding the direction with the highest character count can be done
-with `reduce`. If it's not clear how, refer back to the example
-earlier in the chapter, where `reduce` was used to find the script
-with the most characters.
+Encontrar la dirección con la mayor cantidad de caracteres se puede hacer
+con `reduce`. Si no está claro cómo, refiérate al ejemplo
+anterior en el capítulo, donde se usa `reduce` para encontrar el código
+con la mayoría de los caracteres.
 
 hint}}
