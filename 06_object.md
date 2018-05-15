@@ -1,12 +1,12 @@
 {{meta {load_files: ["code/chapter/06_object.js"], zip: "node/html"}}}
 
-# The Secret Life of Objects
+# La Vida Secreta de los Objetos
 
 {{quote {author: "Barbara Liskov", title: "Programming with Abstract Data Types", chapter: true}
 
-An abstract data type is realized by writing a special kind of program
-[…] which defines the type in terms of the operations which can be
-performed on it.
+Un tipo de datos abstracto se realiza al escribir un tipo especial de programa
+[...] que define el tipo en base a las operaciones que puedan ser
+realizadas en él.
 
 quote}}
 
@@ -14,139 +14,141 @@ quote}}
 
 {{figure {url: "img/chapter_picture_6.jpg", alt: "Picture of a rabbit with its proto-rabbit", chapter: framed}}}
 
-[Chapter ?](data) introduced JavaScript's ((object))s. In programming
-culture, we have a thing called _((object-oriented programming))_, a
-set of techniques that use objects (and related concepts) as the
-central principle of program organization.
+El [Capítulo 4](datos) introdujo los ((objeto))s en JavaScript. En la cultura
+de la programación, tenemos una cosa llamada _((programación orientada a objetos))_,
+la cual es un conjunto de técnicas que usan objetos (y conceptos relacionados)
+como el principio central de la organización del programa.
 
-Though no one really agrees on its precise definition, object-oriented
-programming has shaped the design of many programming languages,
-including JavaScript. This chapter will describe the way these ideas
-can be applied in JavaScript.
+Aunque nadie realmente está de acuerdo con su definición exacta,
+la programación orientada a objetos ha contribuido al diseño de muchos
+lenguajes de programación, incluyendo JavaScript. Este capítulo describirá la
+forma en la que estas ideas pueden ser aplicadas en JavaScript.
 
-## Encapsulation
+## Encapsulación
 
 {{index encapsulation, isolation, modularity}}
 
-The core idea in object-oriented programming is to divide programs
-into smaller pieces and make each piece responsible for managing its
-own state.
+La idea central en la programación orientada a objetos es dividir a los programas
+en piezas más pequeñas y hacer que cada pieza sea responsable de gestionar su
+propio estado.
 
-This way, some knowledge about the way a piece of the program works
-can be kept _local_ to that piece. Someone working on the rest of the
-program does not have to remember or even be aware of that knowledge.
-Whenever these local details change, only the code directly around it
-needs to be updated.
+De esta forma, los conocimientos acerca de como funciona una parte
+del programa pueden mantenerse _locales_ a esa pieza. Alguien trabajando en otra
+parte del programa no tiene que recordar o ni siquiera tener una idea
+de ese conocimiento. Cada vez que los detalles locales cambien, solo
+el código directamente a su alrededor debe ser actualizado.
 
 {{id interface}}
 
-Different pieces of such a program interact with each other through
-_((interface))s_, limited sets of functions or bindings that provide
-useful functionality at a more abstract level, hiding its precise
-implementation.
+Las diferentes piezas de un programa como tal, interactúan entre sí a través de
+_((interfaces))_, las cuales son conjuntos limitados de funciones y
+vinculaciones que proporcionan funcionalidades útiles en un nivel más
+abstracto, ocultando asi su implementación interna.
 
 {{index "public properties", "private properties", "access control"}}
 
-Such program pieces are modeled using ((object))s. Their interface
-consists of a specific set of ((method))s and properties. Properties
-that are part of the interface are called _public_. The others, which
-outside code should not be touching, are called _private_.
+Tales piezas del programa se modelan usando ((objeto))s. Sus interfaces
+consisten en un conjunto específico de ((método))s y propiedades. Las propiedades
+que son parte de la interfaz se llaman _publicas_. Las otras, las cuales no
+deberian ser tocadas por el código externo , se les llama _privadas_.
 
 {{index "underscore character"}}
 
-Many languages provide a way to distinguish public and private
-properties and will prevent outside code from accessing the private
-ones altogether. JavaScript, once again taking the minimalist
-approach, does not. Not yet, at least—there is work underway to add
-this to the language.
+Muchos lenguajes proporcionan una forma de distinguir entre propiedades publicas
+y privadas, y ademas evitarán que el código externo pueda acceder a las privadas
+por completo. JavaScript, una vez más tomando el enfoque minimalista,
+no hace esto. Todavía no, al menos—hay trabajo en camino para agregar
+esto al lenguaje.
 
-Even though the language doesn't have this distinction built in,
-JavaScript programmers _are_ successfully using this idea. Typically,
-the available interface is described in documentation or comments. It
-is also common to put an underscore (`_`) character at the start of
-property names to indicate that those properties are private.
+Aunque el lenguaje no tenga esta distinción incorporada,
+los programadores de JavaScript _estan_ usando esta idea con éxito .Típicamente,
+la interfaz disponible se describe en la documentación o en los comentarios.
+También es común poner un carácter de guión bajo (`_`) al comienzo de los
+nombres de las propiedades para indicar que estas propiedades son privadas.
 
-Separating interface from implementation is a great idea. It is
-usually called _((encapsulation))_.
+Separar la interfaz de la implementación es una gran idea. Esto
+usualmente es llamado _((encapsulación))_.
 
 {{id obj_methods}}
 
-## Methods
+## Métodos
 
 {{index "rabbit example", method, property}}
 
-Methods are nothing more than properties that hold function values.
-This is a simple method:
+Los métodos no son más que propiedades que tienen valores de función.
+Este es un método simple:
 
 ```
-let rabbit = {};
-rabbit.speak = function(line) {
-  console.log(`The rabbit says '${line}'`);
+let conejo = {};
+conejo.hablar = function(linea) {
+  console.log(`El conejo dice '${linea}'`);
 };
 
-rabbit.speak("I'm alive.");
-// → The rabbit says 'I'm alive.'
+conejo.hablar("Estoy vivo.");
+// → El conejo dice 'Estoy vivo.'
 ```
 
 {{index this, "method call"}}
 
-Usually a method needs to do something with the object it was called
-on. When a function is called as a method—looked up as a property and
-immediately called, as in `object.method()`—the binding called `this`
-in its body automatically points at the object that it was called on.
+Por lo general, un método debe hacer algo en el objeto con que se llamó.
+Cuando una función es llamada como un método—buscada como una propiedad y
+llamada inmediatamente, como en `objeto.metodo()`—la vinculación llamada `this`
+("este") en su cuerpo apunta automáticamente al objeto en la cual fue llamada.
 
 ```{includeCode: "top_lines:6", test: join}
-function speak(line) {
-  console.log(`The ${this.type} rabbit says '${line}'`);
+function hablar(linea) {
+  console.log(`El conejo ${this.tipo} dice '${linea}'`);
 }
-let whiteRabbit = {type: "white", speak};
-let hungryRabbit = {type: "hungry", speak};
+let conejoBlanco = {tipo: "blanco", hablar};
+let conejoHambriento = {tipo: "hambriento", hablar};
 
-whiteRabbit.speak("Oh my ears and whiskers, " +
-                  "how late it's getting!");
-// → The white rabbit says 'Oh my ears and whiskers, how
-//   late it's getting!'
-hungryRabbit.speak("I could use a carrot right now.");
-// → The hungry rabbit says 'I could use a carrot right now.'
+conejoBlanco.hablar("Oh mis orejas y bigotes, " +
+                  "que tarde se esta haciendo!");
+// → El conejo blanco dice 'Oh mis orejas y bigotes, que
+//   tarde se esta haciendo!'
+conejoHambriento.hablar("Podria comerme una zanahoria ahora mismo.");
+// → El conejo hambriento dice 'Podria comerme una zanahoria ahora mismo.'
 ```
 
 {{id call_method}}
 
 {{index "call method"}}
 
-You can think of `this` as an extra ((parameter)) that is passed in a
-different way. If you want to pass it explicitly, you can use a
-function's `call` method, which takes the `this` value as first
-argument and treats further arguments as normal parameters.
+Puedes pensar en `this` como un ((parámetro)) extra que es pasado en
+una manera diferente. Si quieres pasarlo explícitamente, puedes usar
+el método `call` ("llamar") de una función, que toma el valor de `this`
+como primer argumento y trata a los argumentos adicionales como parámetros
+normales.
 
 ```
-speak.call(hungryRabbit, "Burp!");
-// → The hungry rabbit says 'Burp!'
+hablar.call(conejoHambriento, "Burp!");
+// → El conejo hambriento dice 'Burp!'
 ```
 
-Since each function has its own `this` binding, whose value depends on
-the way it is called, you cannot refer to the `this` of the wrapping
-scope in a regular function defined with the `function` keyword.
+Como cada función tiene su propia vinculación `this`, cuyo valor depende de
+la forma en como esta se llama, no puedes hacer referencia al `this` del
+alcance envolvente en una función regular definida con la palabra clave
+`function`.
 
 {{index this, "arrow function"}}
 
-Arrow functions are different—they do not bind their own `this`, but
-can see the `this` binding of the scope around them. Thus, you can do
-something like the following code, which references `this` from inside
-a local function:
+Las funciones de flecha son diferentes—no crean su propia vinculación `this`,
+pero pueden ver la vinculación`this` del alcance a su alrededor. Por lo tanto,
+puedes hacer algo como el siguiente código, que hace referencia a `this`
+desde adentro de una función local:
 
 ```
-function normalize() {
-  console.log(this.coords.map(n => n / this.length));
+function normalizar() {
+  console.log(this.coordinadas.map(n => n / this.length));
 }
-normalize.call({coords: [0, 2, 3], length: 5});
+normalizar.call({coordinadas: [0, 2, 3], length: 5});
 // → [0, 0.4, 0.6]
 ```
 
 {{index "map method"}}
 
-If I had written the argument to `map` using the `function` keyword,
-the code wouldn't work.
+Si hubieras escrito el argumento para `map` usando la palabra clave `function`,
+el código no funcionaría.
 
 {{id prototypes}}
 
