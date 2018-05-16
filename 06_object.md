@@ -152,39 +152,39 @@ el código no funcionaría.
 
 {{id prototypes}}
 
-## Prototypes
+## Prototipos
 
 {{index "toString method"}}
 
-Watch closely.
+Observa atentamente.
 
 ```
-let empty = {};
-console.log(empty.toString);
+let vacio = {};
+console.log(vacio.toString);
 // → function toString(){…}
-console.log(empty.toString());
+console.log(vacio.toString());
 // → [object Object]
 ```
 
 {{index magic}}
 
-I pulled a property out of an empty object. Magic!
+Saqué una propiedad de un objeto vacío. Magia!
 
 {{index property, object}}
 
-Well, not really. I have simply been withholding information about the
-way JavaScript objects work. In addition to their set of properties,
-most objects also have a _((prototype))_. A prototype is another
-object that is used as a fallback source of properties. When an object
-gets a request for a property that it does not have, its prototype
-will be searched for the property, then the prototype's prototype, and
-so on.
+Bueno, en realidad no. Simplemente he estado ocultando información acerca de
+como funcionan los objetos en JavaScript. En adición a su conjunto de propiedades,
+la mayoría de los objetos también tienen un _((prototipo))_. Un prototipo es otro
+objeto que se utiliza como una reserva de propiedades alternativa. Cuando un
+objeto recibe una solicitud por una propiedad que este no tiene,
+se buscará en su prototipo la propiedad, luego en el prototipo del prototipo y
+asi sucesivamente.
 
 {{index "Object prototype"}}
 
-So who is the ((prototype)) of that empty object? It is the great
-ancestral prototype, the entity behind almost all objects,
-`Object.prototype`.
+Asi que, quién es el ((prototipo)) de ese objeto vacío? Es el gran
+prototipo ancestral, la entidad detrás de casi todos los objetos,
+`Object.prototype` ("Objeto.prototipo").
 
 ```
 console.log(Object.getPrototypeOf({}) ==
@@ -196,22 +196,23 @@ console.log(Object.getPrototypeOf(Object.prototype));
 
 {{index "getPrototypeOf function"}}
 
-As you guess, `Object.getPrototypeOf` returns the prototype of an
-object.
+Como puedes adivinar, `Object.getPrototypeOf` ("Objeto.obtenerPrototipoDe")
+retorna el prototipo de un objeto.
 
 {{index "toString method"}}
 
-The prototype relations of JavaScript objects form a ((tree))-shaped
-structure, and at the root of this structure sits `Object.prototype`.
-It provides a few ((method))s that show up in all objects, such as
-`toString`, which converts an object to a string representation.
+Las relaciones prototipo de los objetos en JavaScript forman una estructura
+en forma de ((árbol)), y en la raíz de esta estructura se encuentra
+`Object.prototype`. Este proporciona algunos métodos que pueden ser accedidos
+por todos los objetos, como `toString`, que convierte un objeto en una
+representación de tipo string.
 
 {{index inheritance, "Function prototype", "Array prototype", "Object prototype"}}
 
-Many objects don't directly have `Object.prototype` as their
-((prototype)), but instead have another object that provides a different set of
-default properties. Functions derive from `Function.prototype`, and
-arrays derive from `Array.prototype`.
+Muchos objetos no tienen `Object.prototype` directamente como su ((prototipo)),
+pero en su lugar tienen otro objeto que proporciona un conjunto diferente de
+propiedades predeterminadas. Las funciones derivan de `Function.prototype`, y
+los arrays derivan de `Array.prototype`.
 
 ```
 console.log(Object.getPrototypeOf(Math.max) ==
@@ -224,37 +225,35 @@ console.log(Object.getPrototypeOf([]) ==
 
 {{index "Object prototype"}}
 
-Such a prototype object will itself have a prototype, often
-`Object.prototype`, so that it still indirectly provides methods like
-`toString`.
+Tal prototipo de objeto tendrá en si mismo un prototipo, a menudo `Object.prototype`,
+por lo que aún proporciona indirectamente métodos como `toString`.
 
 {{index "rabbit example", "Object.create function"}}
 
-You can use `Object.create` to create an object with a specific
-((prototype)).
+Puede usar `Object.create` para crear un objeto con un ((prototipo)) especifico.
 
 ```
-let protoRabbit = {
-  speak(line) {
-    console.log(`The ${this.type} rabbit says '${line}'`);
+let conejoPrototipo = {
+  hablar(linea) {
+    console.log(`El conejo ${this.tipo} dice '${linea}'`);
   }
 };
-let killerRabbit = Object.create(protoRabbit);
-killerRabbit.type = "killer";
-killerRabbit.speak("SKREEEE!");
-// → The killer rabbit says 'SKREEEE!'
+let conejoAsesino = Object.create(conejoPrototipo);
+conejoAsesino.tipo = "asesino";
+conejoAsesino.hablar("SKREEEE!");
+// → El conejo asesino dice 'SKREEEE!'
 ```
 
 {{index "shared property"}}
 
-A property like `speak(line)` in an object expression is a shorthand
-for defining a method. It creates a property called `speak` and gives
-it a function as its value.
+Una propiedad como `hablar(linea)` en una expresión de objeto es un atajo
+para definir un método. Esta crea una propiedad llamada `hablar` y le da
+una función como su valor.
 
-The "proto" rabbit acts as a container for the properties that are
-shared by all rabbits. An individual rabbit object, like the killer
-rabbit, contains properties that apply only to itself—in this case its
-type—and derives shared properties from its prototype.
+El conejo "prototipo" actúa como un contenedor para las propiedades que son
+compartidas por todos los conejos. Un objeto de conejo individual, como el
+conejo asesino, contiene propiedades que aplican solo a sí mismo—en este
+caso su tipo—y deriva propiedades compartidas desde su prototipo.
 
 {{id classes}}
 
