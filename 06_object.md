@@ -257,92 +257,92 @@ caso su tipo—y deriva propiedades compartidas desde su prototipo.
 
 {{id classes}}
 
-## Classes
+## Clases
 
 {{index "object-oriented programming"}}
 
-JavaScript's ((prototype)) system can be interpreted as a somewhat
-informal take on an object-oriented concept called _((class))es_. A
-class defines the shape of a type of object—what methods and
-properties it has. Such an object is called an _((instance))_ of the
-class.
+El sistema de ((prototipos)) en JavaScript se puede interpretar como un
+enfoque informal de un concepto orientado a objetos llamado _((clase))es_.
+Una clase define la forma de un tipo de objeto—qué métodos y
+propiedades tiene este. Tal objeto es llamado una _((instancia))_ de la
+clase.
 
-Prototypes are useful for defining properties for which all instances
-of a class share the same value, such as ((method))s. Properties that
-differ per instance, such as our rabbits' `type` ((property)), need to
-be stored directly in the objects themselves.
+Los prototipos son útiles para definir propiedades en las cuales todas las
+instancias de una clase compartan el mismo valor, como ((método))s.
+Las propiedades que difieren por instancia, como la ((propiedad)) `tipo`
+en nuestros conejos, necesitan almacenarse directamente en los objetos mismos.
 
 {{id constructors}}
 
-So in order to create an instance of a given class, you have to make
-an object that derives from the proper prototype, but you _also_ have
-to make sure it, itself, has the properties that instances of this
-class are supposed to have. This is what a _((constructor))_ function
-does.
+Entonces, para crear una instancia de una clase dada, debes crear
+un objeto que derive del prototipo adecuado, pero _también_ debes
+asegurarte de que, en sí mismo, este objeto tenga las propiedades que
+las instancias de esta clase se supone que tengan.
+Esto es lo que una función _((constructora))_ hace.
 
 ```
-function makeRabbit(type) {
-  let rabbit = Object.create(protoRabbit);
-  rabbit.type = type;
-  return rabbit;
+function crearConejo(tipo) {
+  let conejo = Object.create(conejoPrototipo);
+  conejo.tipo = tipo;
+  return conejo;
 }
 ```
 
 {{index "new operator", this, "return keyword", [object, creation]}}
 
-JavaScript provides a way to make defining this type of function
-easier. If you put the keyword `new` in front of a function call, the
-function is treated as a constructor. This means that an object with
-the right prototype is automatically created, bound to `this` in the
-function, and returned at the end of the function.
+JavaScript proporciona una manera de hacer que la definición de este tipo de
+funciones sea más fácil. Si colocas la palabra clave `new` ("new") delante de
+una llamada de función, la función sera tratada como un constructor. Esto
+significa que un objeto con el prototipo adecuado es creado automáticamente,
+vinculado a `this` en la función, y retornado al final de la función.
 
 {{index "prototype property"}}
 
-The prototype object used when constructing objects is found by taking
-the `prototype` property of the constructor function.
+El objeto prototipo utilizado al construir objetos se encuentra al tomar
+la propiedad `prototype` de la función constructora.
 
 {{index "rabbit example"}}
 
 ```
-function Rabbit(type) {
-  this.type = type;
+function Conejo(tipo) {
+  this.tipo = tipo;
 }
-Rabbit.prototype.speak = function(line) {
-  console.log(`The ${this.type} rabbit says '${line}'`);
+Conejo.prototype.hablar = function(linea) {
+  console.log(`El conejo ${this.tipo} dice '${linea}'`);
 };
 
-let weirdRabbit = new Rabbit("weird");
+let conejoRaro = new Conejo("raro");
 ```
 
 {{index constructor}}
 
-Constructors (all functions, in fact) automatically get a property
-named `prototype`, which by default holds a plain, empty object that
-derives from `Object.prototype`. You can overwrite it with a new
-object if you want. Or you can add properties to the existing object,
-as the example does.
+Los constructores (todas las funciones, de hecho) automáticamente obtienen
+una propiedad llamada `prototype`, que por defecto contiene un objeto simple
+y vacío, que deriva de `Object.prototype`. Puedes sobrescribirlo con un nuevo
+objeto si asi quieres. O puedes agregar propiedades al objeto ya existente,
+como lo hace el ejemplo.
 
 {{index capitalization}}
 
-By convention, the names of constructors are capitalized so that they
-can easily be distinguished from other functions.
+Por convención, los nombres de los constructores tienen la primera letra en
+mayúscula para que se puedan distinguir fácilmente de otras funciones.
 
 {{index "prototype property", "getPrototypeOf function"}}
 
-It is important to understand the distinction between the way a
-prototype is associated with a constructor (through its `prototype`
-property) and the way objects _have_ a prototype (which can be found
-with `Object.getPrototypeOf`). The actual prototype of a constructor
-is `Function.prototype`, since constructors are functions. Its
-`prototype` _property_ holds the prototype used for instances created
-through it.
+Es importante entender la distinción entre la forma en que un prototipo
+está asociado con un constructor (a través de su propiedad `prototype`)
+y la forma en que los objetos _tienen_ un prototipo (que se puede
+encontrar con `Object.getPrototypeOf`). El prototipo real de un constructor
+es `Function.prototype`, ya que los constructores son funciones. Su
+_propiedad_ `prototype` contiene el prototipo utilizado para las
+instancias creadas a traves de el.
 
 ```
-console.log(Object.getPrototypeOf(Rabbit) ==
+console.log(Object.getPrototypeOf(Conejo) ==
             Function.prototype);
 // → true
-console.log(Object.getPrototypeOf(weirdRabbit) ==
-            Rabbit.prototype);
+console.log(Object.getPrototypeOf(conejoRaro) ==
+            Conejo.prototype);
 // → true
 ```
 
