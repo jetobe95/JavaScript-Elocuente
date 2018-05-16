@@ -346,56 +346,56 @@ console.log(Object.getPrototypeOf(conejoRaro) ==
 // → true
 ```
 
-## Class notation
+## Notación de clase
 
-So JavaScript ((class))es are ((constructor)) functions with a
-((prototype)) property. That is how they work, and until 2015, that
-was how you had to write them. These days, we have a less awkward
-notation.
+Entonces, las ((clase))es en JavaScript son funciones ((constructoras)) con una
+propiedad ((prototipo)). Así es como funcionan, y hasta 2015, esa
+era la manera en como tenías que escribirlas. Estos días, tenemos una
+notación menos incómoda.
 
 ```{includeCode: true}
-class Rabbit {
-  constructor(type) {
-    this.type = type;
+class Conejo {
+  constructor(tipo) {
+    this.tipo = tipo;
   }
-  speak(line) {
-    console.log(`The ${this.type} rabbit says '${line}'`);
+  hablar(linea) {
+    console.log(`El conejo ${this.tipo} dice '${linea}'`);
   }
 }
 
-let killerRabbit = new Rabbit("killer");
-let blackRabbit = new Rabbit("black");
+let conejoAsesino = new Conejo("asesino");
+let conejoNegro = new Conejo("negro");
 ```
 
 {{index "rabbit example"}}
 
-The `class` keyword starts a ((class declaration)), which allows us to
-define a constructor and a set of methods all in a single place. Any
-number of methods may be written inside the declaration's ((curly
-braces)). The one named `constructor` is treated specially. It
-provides the actual constructor function, which will be bound to the
-name `Rabbit`. The others are packaged into that constructor's
-prototype. Thus, the class declaration above is equivalent to the
-constructor definition from the previous section. It just looks nicer.
+La palabra clave `class` ("clase") comienza una ((declaración de clase)),
+que nos permite definir un constructor y un conjunto de métodos, todo en un
+solo lugar. Cualquier número de métodos se pueden escribir dentro de las llaves
+de la declaración. El metodo llamado `constructor` es tratado de una manera
+especial. Este proporciona la función constructora real, que estará vinculada al
+nombre `Conejo`. Los otros metodos estaran empacados en el prototipo de ese
+constructor. Por lo tanto, la declaración de clase anterior es equivalente a la
+definición de constructor en la sección anterior. Solo que se ve mejor.
 
 {{index ["class declaration", properties]}}
 
-Class declarations currently only allow _methods_—properties that hold
-functions—to be added to the ((prototype)). This can be somewhat
-inconvenient when you want to save a non-function value in there.
-The next version of the language will probably improve this. For now, you
-can create such properties by directly manipulating the
-prototype after you've defined the class.
+Actualmente las declaraciones de clase solo permiten que los _metodos_—propiedades
+que contengan funciones—puedan ser agregados al ((prototipo)). Esto puede ser
+algo inconveniente para cuando quieras guardar un valor no-funcional allí.
+La próxima versión del lenguaje probablemente mejore esto. Por ahora, tú
+puedes crear tales propiedades al manipular directamente el
+prototipo después de haber definido la clase.
 
-Like `function`, `class` can be used both in statement and in
-expression positions. When used as an expression, it doesn't define a
-binding, but just produces the constructor as a value. You are allowed
-to omit the class name in a class expression.
+Al igual que `function`, `class` se puede usar tanto en posiciones de
+declaración como de expresión. Cuando se usa como una expresión, no define una
+vinculación, pero solo produce el constructor como un valor. Tienes permitido
+omitir el nombre de clase en una expresión de clase.
 
 ```
-let object = new class { getWord() { return "hello"; } };
-console.log(object.getWord());
-// → hello
+let objeto = new class { obtenerPalabra() { return "hola"; } };
+console.log(objeto.obtenerPalabra());
+// → hola
 ```
 
 ## Overriding derived properties
