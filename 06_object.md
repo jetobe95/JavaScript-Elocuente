@@ -602,69 +602,69 @@ interfaz específica, lo que hacen los arrays y strings. Y también puedes agreg
 esta interfaz a tus propios objetos! Pero antes de que podamos hacer eso,
 necesitamos saber qué son los símbolos.
 
-## Symbols
+## Símbolos
 
-It is possible for multiple interfaces to use the same property name
-for different things. For example, I could define an interface in which
-the `toString` method is supposed to convert the object into a piece
-of yarn. It would not be possible for an object to conform to both
-that interface and the standard use of `toString`.
+Es posible que múltiples interfaces usen el mismo nombre de propiedad
+para diferentes cosas. Por ejemplo, podría definir una interfaz en la que
+se suponga que el método `toString` convierte el objeto a una pieza
+de hilo. No sería posible para un objeto ajustarse a
+esa interfaz y al uso estándar de `toString`.
 
-That would be a bad idea, and this problem isn't that common. Most
-JavaScript programmers simply don't think about it. But the language
-designers, whose _job_ it is to think about this stuff, have provided
-us with a solution anyway.
+Esa sería una mala idea, y este problema no es muy común. La mayoria de
+los programadores de JavaScript simplemente no piensan en eso.
+Pero los diseñadores del lenguaje, cuyo _trabajo_ es pensar acerca de estas
+cosas, nos han proporcionado una solución de todos modos.
 
 {{index "Symbol function", property}}
 
-When I claimed that property names are strings, that wasn't entirely
-accurate. They usually are, but they can also be _((symbol))s_.
-Symbols are values created with the `Symbol` function. Unlike strings,
-newly created symbols are unique—you cannot create the same symbol
-twice.
+Cuando afirmé que los nombres de propiedad son strings, eso no fue del todo
+preciso. Usualmente lo son, pero también pueden ser _((símbolo))s_.
+Los símbolos son valores creados con la función `Symbol`. A diferencia de los
+strings, los símbolos recién creados son únicos—no puedes crear el mismo símbolo
+dos veces.
 
 ```
-let sym = Symbol("name");
-console.log(sym == Symbol("name"));
+let simbolo = Symbol("nombre");
+console.log(simbolo == Symbol("nombre"));
 // → false
-Rabbit.prototype[sym] = 55;
-console.log(blackRabbit[sym]);
+Conejo.prototype[simbolo] = 55;
+console.log(conejoNegro[simbolo]);
 // → 55
 ```
 
-The string you pass to `Symbol` is included when you convert it to a
-string, and can make it easier to recognize a symbol when, for
-example, showing it in the console. But it has no meaning beyond
-that—multiple symbols may have the same name.
+El string que pases a `Symbol` es incluido cuando lo conviertas a
+string, y puede hacer que sea más fácil reconocer un símbolo cuando, por
+ejemplo, lo muestres en la consola. Pero no tiene sentido más allá de
+eso—múltiples símbolos pueden tener el mismo nombre.
 
-Being both unique and useable as property names makes symbols suitable
-for defining interfaces that can peacefully live alongside other
-properties, no matter what their names are.
+Al ser únicos y utilizables como nombres de propiedad, los símbolos son adecuados
+para definir interfaces que pueden vivir pacíficamente junto a otras
+propiedades, sin importar cuáles sean sus nombres.
 
 ```{includeCode: "top_lines: 1"}
-const toStringSymbol = Symbol("toString");
-Array.prototype[toStringSymbol] = function() {
-  return `${this.length} cm of blue yarn`;
+const simboloToString = Symbol("toString");
+Array.prototype[simboloToString] = function() {
+  return `${this.length} cm de hilo azul`;
 };
 
 console.log([1, 2].toString());
 // → 1,2
-console.log([1, 2][toStringSymbol]());
-// → 2 cm of blue yarn
+console.log([1, 2][simboloToString]());
+// → 2 cm de hilo azul
 ```
 
-It is possible to include symbol properties in object expressions and
-classes by using ((square bracket))s around the ((property)) name.
-That causes the property name to be evaluated, much like the square
-bracket property access notation, which allows us to refer to a
-binding that holds the symbol.
+Es posible incluir propiedades de símbolos en expresiones de objetos y
+clases usando ((corchete))s alrededor del nombre de la ((propiedad)).
+Eso hace que se evalúe el nombre de la propiedad, al igual que la
+notación de corchetes para acceder propiedades, lo cual
+nos permite hacer referencia a una vinculación que contiene el símbolo.
 
 ```
-let stringObject = {
-  [toStringSymbol]() { return "a jute rope"; }
+let objetoString = {
+  [simboloToString]() { return "una cuerda de cañamo"; }
 };
-console.log(stringObject[toStringSymbol]());
-// → a jute rope
+console.log(objetoString[simboloToString]());
+// → una cuerda de cañamo
 ```
 
 ## The iterator interface
