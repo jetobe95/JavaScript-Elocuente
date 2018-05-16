@@ -667,37 +667,37 @@ console.log(objetoString[simboloToString]());
 // → una cuerda de cañamo
 ```
 
-## The iterator interface
+## La interfaz de iterador
 
 {{index "iterable interface", "Symbol.iterator symbol", "for/of loop"}}
 
-The object given to a `for`/`of` loop is expected to be _iterable_.
-This means that it has a method named with the `Symbol.iterator`
-symbol (a symbol value defined by the language, stored as a property
-of the `Symbol` function).
+Se espera que el objeto dado a un ciclo `for`/`of` sea _iterable_.
+Esto significa que tenga un método llamado con el símbolo `Symbol.iterator`
+(un valor de símbolo definido por el idioma, almacenado como una propiedad
+de la función `Symbol`).
 
 {{index "iterator interface", "next method"}}
 
-When called, that method should return an object that provides a
-second interface, _iterator_. This is the actual thing that iterates.
-It has a `next` method that returns the next result. That result
-should be an object with a `value` property, providing the next value,
-if there is one, and a `done` property which should be true when there
-are no more results and false otherwise.
+Cuando sea llamado, ese método debe retornar un objeto que proporcione una
+segunda interfaz, _iteradora_. Esta es la cosa real que realiza la iteración.
+Tiene un método `next` ("siguiente") que retorna el siguiente resultado.
+Ese resultado debería ser un objeto con una propiedad `value` ("valor"),
+que proporciona el siguiente valor, si hay uno, y una propiedad `done` ("listo")
+que debería ser cierta cuando no haya más resultados y falso de lo contrario.
 
-Note that the `next`, `value`, and `done` property names are plain
-strings, not symbols. Only `Symbol.iterator`, which is likely to be
-added to a _lot_ of different objects, is an actual symbol.
+Ten en cuenta que los nombres de las propiedades `next`, `value` y `done` son
+simples strings, no símbolos. Solo `Symbol.iterator`, que probablemente sea
+agregado a un _monton_ de objetos diferentes, es un símbolo real.
 
-We can directly use this interface ourselves.
+Podemos usar directamente esta interfaz nosotros mismos.
 
 ```
-let okIterator = "OK"[Symbol.iterator]();
-console.log(okIterator.next());
+let iteradorOK = "OK"[Symbol.iterator]();
+console.log(iteradorOK.next());
 // → {value: "O", done: false}
-console.log(okIterator.next());
+console.log(iteradorOK.next());
 // → {value: "K", done: false}
-console.log(okIterator.next());
+console.log(iteradorOK.next());
 // → {value: undefined, done: true}
 ```
 
@@ -705,64 +705,64 @@ console.log(okIterator.next());
 
 {{id matrix}}
 
-Let's implement an iterable data structure. We'll build a _matrix_
-class, acting as a two-dimensional array.
+Implementemos una estructura de datos iterable. Construiremos una clase
+_matriz_, que actuara como un array bidimensional.
 
 ```{includeCode: true}
-class Matrix {
-  constructor(width, height, element = (x, y) => undefined) {
-    this.width = width;
-    this.height = height;
-    this.content = [];
+class Matriz {
+  constructor(ancho, altura, elemento = (x, y) => undefined) {
+    this.ancho = ancho;
+    this.altura = altura;
+    this.contenido = [];
 
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        this.content[y * width + x] = element(x, y);
+    for (let y = 0; y < altura; y++) {
+      for (let x = 0; x < ancho; x++) {
+        this.contenido[y * ancho + x] = elemento(x, y);
       }
     }
   }
 
-  get(x, y) {
-    return this.content[y * this.width + x];
+  obtener(x, y) {
+    return this.contenido[y * this.ancho + x];
   }
-  set(x, y, value) {
-    this.content[y * this.width + x] = value;
+  establecer(x, y, valor) {
+    this.contenido[y * this.ancho + x] = valor;
   }
 }
 ```
 
-The class stores its content in a single array of _width_ × _height_
-elements. The elements are stored row-by-row, so, for example, the third
-element in the fifth row is (using zero-based indexing) stored at
-position 4 × _width_ + 2.
+La clase almacena su contenido en un único array de elementos _altura_ × _ancho_.
+Los elementos se almacenan fila por fila, por lo que, por ejemplo, el tercer
+elemento en la quinta fila es (utilizando indexación basada en cero) almacenado
+en la posición 4 × _ancho_ + 2.
 
-The constructor function takes a width, height, and an optional
-content function that will be used to fill in the initial values.
-There are `get` and `set` methods to retrieve and update elements in
-the matrix.
+La función constructora toma un ancho, una altura y una función opcional
+de contenido que se usará para llenar los valores iniciales.
+Hay métodos `obtener` y `establecer` para recuperar y actualizar elementos en
+la matriz.
 
-When looping over a matrix, you are usually interested in the position
-of the elements as well as the elements themselves, so we'll have our
-iterator produce objects with `x`, `y`, and `value` properties.
+Al hacer un ciclo sobre una matriz, generalmente estás interesado en la posición
+tanto de los elementos como de los elementos en sí mismos, así que haremos que
+nuestro iterador produzca objetos con propiedades `x`, `y`, y `value` ("valor").
 
 {{index "MatrixIterator class"}}
 
 ```{includeCode: true}
-class MatrixIterator {
-  constructor(matrix) {
+class IteradorMatriz {
+  constructor(matriz) {
     this.x = 0;
     this.y = 0;
-    this.matrix = matrix;
+    this.matriz = matriz;
   }
 
   next() {
-    if (this.y == this.matrix.height) return {done: true};
+    if (this.y == this.matriz.altura) return {done: true};
 
     let value = {x: this.x,
                  y: this.y,
-                 value: this.matrix.get(this.x, this.y)};
+                 value: this.matriz.obtener(this.x, this.y)};
     this.x++;
-    if (this.x == this.matrix.width) {
+    if (this.x == this.matriz.ancho) {
       this.x = 0;
       this.y++;
     }
@@ -771,38 +771,38 @@ class MatrixIterator {
 }
 ```
 
-The class tracks the progress of iterating over a matrix in its `x`
-and `y` properties. The `next` method starts by checking whether the
-bottom of the matrix has been reached. If it hasn't, it _first_
-creates the object holding the current value and _then_ updates its
-position, moving to the next row if necessary.
+La clase hace un seguimiento del progreso de iterar sobre una matriz en sus
+propiedades `x` y `y`. El método `next` ("siguiente") comienza comprobando si
+la parte inferior de la matriz ha sido alcanzada. Si no es así, _primero_
+crea el objeto que contiene el valor actual y _luego_ actualiza su
+posición, moviéndose a la siguiente fila si es necesario.
 
-Let us set up the `Matrix` class to be iterable. Throughout this book,
-I'll occasionally use after-the-fact prototype manipulation to add
-methods to classes, so that the individual pieces of code remain small
-and self-contained. In a regular program, where there is no need to
-split the code into small pieces, you'd declare these methods directly
-in the class instead.
+Configuremos la clase `Matriz` para que sea iterable. A lo largo de este libro,
+Ocasionalmente usaré la manipulación del prototipo después de los hechos para
+agregar métodos a clases, para que las piezas individuales de código
+permanezcan pequeñas y autónomas. En un programa regular, donde no hay necesidad
+de dividir el código en pedazos pequeños, declararias estos métodos directamente
+en la clase.
 
 ```{includeCode: true}
-Matrix.prototype[Symbol.iterator] = function() {
-  return new MatrixIterator(this);
+Matriz.prototype[Symbol.iterator] = function() {
+  return new IteradorMatriz(this);
 };
 ```
 
 {{index "for/of loop"}}
 
-We can now loop over a matrix with `for`/`of`.
+Ahora podemos recorrer una matriz con `for`/`of`.
 
 ```
-let matrix = new Matrix(2, 2, (x, y) => `value ${x},${y}`);
-for (let {x, y, value} of matrix) {
+let matriz = new Matriz(2, 2, (x, y) => `valor ${x},${y}`);
+for (let {x, y, value} of matriz) {
   console.log(x, y, value);
 }
-// → 0 0 value 0,0
-// → 1 0 value 1,0
-// → 0 1 value 0,1
-// → 1 1 value 1,1
+// → 0 0 valor 0,0
+// → 1 0 valor 1,0
+// → 0 1 valor 0,1
+// → 1 1 valor 1,1
 ```
 
 ## Getters, setters, and statics
