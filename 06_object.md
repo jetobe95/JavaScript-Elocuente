@@ -805,58 +805,59 @@ for (let {x, y, value} of matriz) {
 // → 1 1 valor 1,1
 ```
 
-## Getters, setters, and statics
+## Getters, setters y estáticos
 
 {{index interface, property, "Map class"}}
 
-Interfaces often consist mostly of methods, but it is also okay to
-include properties that hold non-function values. For example, `Map`
-objects have a `size` property that tells you how many keys are stored
-in them.
+A menudo, las interfaces consisten principalmente de métodos, pero también
+está bien incluir propiedades que contengan valores que no sean de función.
+Por ejemplo, los objetos `Map` tienen una propiedad `size` ("tamaño")
+que te dice cuántas claves hay almacenanadas en ellos.
 
-It is not even necessary for such an object to compute and store such
-a property directly in the instance. Even properties that are accessed
-directly may hide a method call. Such methods are called
-_((getter))s_, and they are defined by writing `get` in front of the
-method name in an object expression or class declaration.
+Ni siquiera es necesario que dicho objeto calcule y almacene tales
+propiedades directamente en la instancia. Incluso las propiedades que
+pueden ser accedidas directamente pueden ocultar una llamada a un método.
+Tales métodos se llaman _((getter))s_, y se definen escribiendo `get` ("obtener")
+delante del nombre del método en una expresión de objeto o declaración
+de clase.
 
 ```{test: no}
-let varyingSize = {
-  get size() {
+let tamañoCambiante = {
+  get tamaño() {
     return Math.floor(Math.random() * 100);
   }
 };
 
-console.log(varyingSize.size);
+console.log(tamañoCambiante.tamaño);
 // → 73
-console.log(varyingSize.size);
+console.log(tamañoCambiante.tamaño);
 // → 49
 ```
 
 {{index "temperature example"}}
 
-Whenever someone reads from this object's `size` property, the
-associated method is called. You can do a similar thing when a
-property is written to, using a _((setter))_.
+Cuando alguien lee desde la propiedad `tamaño` de este objeto, el
+método asociado es llamado. Puedes hacer algo similar cuando se escribe
+en una propiedad, usando un _((setter))_.
 
 ```{test: no, startCode: true}
-class Temperature {
+class Temperatura {
   constructor(celsius) {
     this.celsius = celsius;
   }
   get fahrenheit() {
     return this.celsius * 1.8 + 32;
   }
-  set fahrenheit(value) {
-    this.celsius = (value - 32) / 1.8;
+  set fahrenheit(valor) {
+    this.celsius = (valor - 32) / 1.8;
   }
 
-  static fromFahrenheit(value) {
-    return new Temperature((value - 32) / 1.8);
+  static desdeFahrenheit(valor) {
+    return new Temperatura((valor - 32) / 1.8);
   }
 }
 
-let temp = new Temperature(22);
+let temp = new Temperatura(22);
 console.log(temp.fahrenheit);
 // → 71.6
 temp.fahrenheit = 86;
@@ -864,123 +865,123 @@ console.log(temp.celsius);
 // → 30
 ```
 
-The `Temperature` class allows you to read and write the temperature
-in either degrees ((Celsius)) or degrees ((Fahrenheit)), but
-internally only stores Celsius, and automatically converts to Celsius
-in the `fahrenheit` getter and setter.
+La clase `Temperatura` te permite leer y escribir la temperatura ya sea
+en grados ((Celsius)) o grados ((Fahrenheit)), pero
+internamente solo almacena Celsius y convierte automáticamente a Celsius
+en el getter y setter `fahrenheit`.
 
 {{index "static method"}}
 
-Sometimes you want to attach some properties directly to your
-constructor function, rather than to the prototype. Such methods won't
-have access to a class instance but can, for example, be used to
-provide additional ways to create instances.
+Algunas veces quieres adjuntar algunas propiedades directamente a tu
+función constructora, en lugar de al prototipo. Tales métodos no
+tienen acceso a una instancia de clase, pero pueden, por ejemplo, ser
+utilizados para proporcionar formas adicionales de crear instancias.
 
-Inside a class declaration, methods that have `static` written before
-their name are stored on the constructor. So the `Temperature` class
-allows you to write `Temperature.fromFahrenheit(100)` to create a
-temperature using degrees Fahrenheit.
+Dentro de una declaración de clase, métodos que tienen `static` ("estatico")
+escrito antes su nombre son almacenados en el constructor. Entonces, la clase
+`Temperatura` te permite escribir `Temperature.desdeFahrenheit(100)` para
+crear una temperatura usando grados Fahrenheit.
 
-## Inheritance
+## Herencia
 
 {{index inheritance, "matrix example", "object-oriented programming", "SymmetricMatrix class"}}
 
-Some matrices are known to be _symmetric_. If you mirror a symmetric
-matrix around its top-left-to-bottom-right diagonal, it stays the
-same. In other words, the value stored at _x_,_y_ is always the same
-as that at _y_,_x_.
+Algunas matrices son conocidas por ser _simétricas_. Si duplicas una matriz
+simétrico alrededor de su diagonal de arriba-izquierda a derecha-abajo, esta
+se mantiene igual. En otras palabras, el valor almacenado en _x_,_y_ es
+siempre el mismo al de _y_,_x_.
 
-Imagine we need a data structure like `Matrix` but one that enforces
-the fact that the matrix is and remains symmetrical. We could write it
-from scratch, but that would involve repeating some code very similar
-to what we already wrote.
+Imagina que necesitamos una estructura de datos como `Matriz` pero que haga
+cumplir el hecho de que la matriz es y siga siendo simétrica. Podríamos
+escribirla desde cero, pero eso implicaría repetir algo de código muy similar
+al que ya hemos escrito.
 
 {{index overriding, prototype}}
 
-JavaScript's prototype system makes it possible to create a _new_
-class, much like the old class, but with new definitions for some of
-its properties. The prototype for the new class derives from the old
-prototype but adds a new definition for, say, the `set` method.
+El sistema de prototipos en JavaScript hace posible crear una _nueva_
+clase, parecida a la clase anterior, pero con nuevas definiciones para
+algunas de sus propiedades. El prototipo de la nueva clase deriva del antiguo
+prototipo, pero agrega una nueva definición para, por ejemplo, el método `set`.
 
-In object-oriented programming terms, this is called
-_((inheritance))_. The new class inherits properties and behavior from
-the old class.
+En términos de programación orientada a objetos, esto se llama
+_((herencia))_. La nueva clase hereda propiedades y comportamientos de
+la vieja clase.
 
 ```{includeCode: "top_lines: 17"}
-class SymmetricMatrix extends Matrix {
-  constructor(size, element = (x, y) => undefined) {
-    super(size, size, (x, y) => {
-      if (x < y) return element(y, x);
-      else return element(x, y);
+class MatrizSimetrica extends Matriz {
+  constructor(tamaño, elemento = (x, y) => undefined) {
+    super(tamaño, tamaño, (x, y) => {
+      if (x < y) return elemento(y, x);
+      else return elemento(x, y);
     });
   }
 
-  set(x, y, value) {
-    super.set(x, y, value);
+  set(x, y, valor) {
+    super.set(x, y, valor);
     if (x != y) {
-      super.set(y, x, value);
+      super.set(y, x, valor);
     }
   }
 }
 
-let matrix = new SymmetricMatrix(5, (x, y) => `${x},${y}`);
-console.log(matrix.get(2, 3));
+let matriz = new MatrizSimetrica(5, (x, y) => `${x},${y}`);
+console.log(matriz.get(2, 3));
 // → 3,2
 ```
 
-The use of the word `extends` indicates that this class shouldn't be
-directly based on the default `Object` prototype, but on some other class. This
-is called the _((superclass))_. The derived class is the
-_((subclass))_.
+El uso de la palabra `extends` indica que esta clase no debe estar
+basada directamente en el prototipo de `Objeto` predeterminado, pero de
+alguna otra clase. Esta se llama la _((superclase))_. La clase derivada es la
+_((subclase))_.
 
-To initialize a `SymmetricMatrix` instance, the constructor calls its
-superclass' constructor through the `super` keyword. This is necessary
-because if this new object is to behave (roughly) like a `Matrix`, it
-is going to need the instance properties that matrices have. In order
-to ensure the matrix is symmetrical, the constructor wraps the
-`content` method to swap the coordinates for values below the
+Para inicializar una instancia de `MatrizSimetrica`, el constructor llama a su
+constructor de superclase a través de la palabra clave `super`. Esto es necesario
+porque si este nuevo objeto se comporta (más o menos) como una `Matriz`,
+va a necesitar las propiedades de instancia que tienen las matrices. En orden
+para asegurar que la matriz sea simétrica, el constructor ajusta el
+método `contenido` para intercambiar las coordenadas de los valores por debajo del
 diagonal.
 
-The `set` method again uses `super`, but this time not to call the
-constructor, but to call a specific method from the superclass' set of
-methods. We are redefining `set` but do want to use the original
-behavior. Because `this.set` refers to the _new_ `set` method, calling
-that wouldn't work. Inside class methods, `super` provides a way to
-call methods as they were defined in the superclass.
+El método `set` nuevamente usa `super`, pero esta vez no para llamar al
+constructor, pero para llamar a un método específico del conjunto de metodos
+de la superclase. Estamos redefiniendo `set` pero queremos usar el comportamiento
+original. Ya que `this.set` se refiere al _nuevo_ método` set`, llamarlo
+no funcionaria. Dentro de los métodos de clase, `super` proporciona una forma de
+llamar a los métodos tal y como se definieron en la superclase.
 
-Inheritance allows us to build slightly different data types from
-existing data types with relatively little work. It is a fundamental
-part of the object-oriented tradition, alongside encapsulation and
-polymorphism. But while the latter two are now generally regarded as
-wonderful ideas, inheritance is more controversial.
+La herencia nos permite construir tipos de datos ligeramente diferentes a partir
+de tipos de datos existentes con relativamente poco trabajo. Es una
+parte fundamental de la tradición orientada a objetos, junto con la encapsulación y
+el polimorfismo. Pero mientras que los últimos dos son considerados como ideas
+maravillosas en la actualidad, la herencia es más controversial.
 
 {{index complexity, reuse, "class hierarchy"}}
 
-Whereas ((encapsulation)) and polymorphism can be used to _separate_
-pieces of code from each other, reducing the tangledness of the
-overall program, ((inheritance)) fundamentally ties classes together,
-creating _more_ tangle. When inheriting from a class, you usually have
-to know more about how it works than when simply using it. Inheritance
-can be a useful tool, and I use it now and then in my own programs,
-but it shouldn't be the first tool you reach for, and you probably
-shouldn't actively go looking for opportunities to construct class
-hierarchies (family trees of classes).
+Mientras que la ((encapsulación)) y el polimorfismo se pueden usar para
+_separar_ piezas de código entre sí, reduciendo el enredo del programa
+en general, la ((herencia)) fundamentalmente vincula las clases,
+creando _mas_ enredo. Al heredar de una clase, generalmente tienes
+que saber más sobre cómo funciona que cuando simplemente la usas. La herencia
+puede ser una herramienta útil, y la uso de vez en cuando en mis
+propios programas, pero no debería ser la primera herramienta que busques,
+y probablemente no deberías estar buscando oportunidades para construir
+jerarquías (árboles genealógicos de clases) de clases en una manera activa.
 
-## The instanceof operator
+## El operador instanceof
 
 {{index type, "instanceof operator", constructor, object}}
 
-It is occasionally useful to know whether an object was derived from a
-specific class. For this, JavaScript provides a binary operator called
-`instanceof`.
+Ocasionalmente es útil saber si un objeto fue derivado de una
+clase específica. Para esto, JavaScript proporciona un operador binario llamado
+`instanceof` ("instancia de").
 
 ```
 console.log(
-  new SymmetricMatrix(2) instanceof SymmetricMatrix);
+  new MatrizSimetrica(2) instanceof MatrizSimetrica);
 // → true
-console.log(new SymmetricMatrix(2) instanceof Matrix);
+console.log(new MatrizSimetrica(2) instanceof Matriz);
 // → true
-console.log(new Matrix(2, 2) instanceof SymmetricMatrix);
+console.log(new Matriz(2, 2) instanceof MatrizSimetrica);
 // → false
 console.log([1] instanceof Array);
 // → true
@@ -988,80 +989,80 @@ console.log([1] instanceof Array);
 
 {{index inheritance}}
 
-The operator will see through inherited types, so a `SymmetricMatrix`
-is an instance of `Matrix`. The operator can also be applied to
-standard constructors like `Array`. Almost every object is an instance
-of `Object`.
+El operador verá a través de los tipos heredados, por lo que una `MatrizSimetrica`
+es una instancia de `Matriz`. El operador también se puede aplicar a
+constructores estándar como `Array`. Casi todos los objetos son una instancia
+de `Object`.
 
-## Summary
+## Resumen
 
-So objects do more than just hold their own properties. They have
-prototypes, which are other objects. They'll act as if they have
-properties they don't have as long as their prototype has that
-property. Simple objects have `Object.prototype` as their prototype.
+Entonces los objetos hacen más que solo tener sus propias propiedades. Ellos
+tienen prototipos, que son otros objetos. Estos actuarán como si tuvieran
+propiedades que no tienen mientras su prototipo tenga esa
+propiedad. Los objetos simples tienen `Object.prototype` como su prototipo.
 
-Constructors, which are functions whose names usually start with a
-capital letter, can be used with the `new` operator to create new
-objects. The new object's prototype will be the object found in the
-`prototype` property of the constructor. You can make good use of this
-by putting the properties that all values of a given type share into
-their prototype. There's a `class` notation that provides a clear way
-to define a constructor and its prototype.
+Los constructores, que son funciones cuyos nombres generalmente comienzan con
+una mayúscula, se pueden usar con el operador `new` para crear nuevos
+objetos. El prototipo del nuevo objeto será el objeto encontrado en la
+propiedad `prototype` del constructor. Puedes hacer un buen uso de esto
+al poner las propiedades que todos los valores de un tipo dado comparten en
+su prototipo. Hay una notación de `class` que proporciona una manera clara
+de definir un constructor y su prototipo.
 
-You can define getters and setters to secretly call methods every time
-an object's property is accessed. Static methods are methods stored in
-a class' constructor, rather than its prototype.
+Puedes definir getters y setters para secretamente llamar a métodos
+cada vez que se acceda a la propiedad de un objeto. Los métodos estáticos
+son métodos almacenados en el constructor de clase, en lugar de su prototipo.
 
-The `instanceof` operator can, given an object and a constructor, tell
-you whether that object is an instance of that constructor.
+El operador `instanceof` puede, dado un objeto y un constructor, decir
+si ese objeto es una instancia de ese constructor.
 
-One useful thing to do with objects is to specify an interface for
-them and tell everybody that they are supposed to talk to your object
-only through that interface. The rest of the details that make up your
-object are now _encapsulated_, hidden behind the interface.
+Una cosa útil que hacer con los objetos es especificar una interfaz para
+ellos y decirle a todos que se supone que deben hablar con ese objeto
+solo a través de esa interfaz. El resto de los detalles que componen tu
+objeto ahora estan _encapsulados_, escondidos detrás de la interfaz.
 
-More than one type may implement the same interface. Code written to
-use an interface automatically knows how to work with any number of
-different objects that provide the interface. This is called
-_polymorphism_.
+Más de un tipo puede implementar la misma interfaz. El código escrito para
+utilizar una interfaz automáticamente sabe cómo trabajar con cualquier
+cantidad de objetos diferentes que proporcionen la interfaz. Esto se llama
+_polimorfismo_.
 
-When implementing multiple classes that differ in only some details,
-it can be helpful to write the new classes as _subclasses_ of an
-existing class, _inheriting_ part of its behavior.
+Al implementar múltiples clases que difieran solo en algunos detalles,
+puede ser útil escribir las nuevas clases como _subclases_ de una
+clase existente, _heredando_ parte de su comportamiento.
 
-## Exercises
+## Ejercicios
 
 {{id exercise_vector}}
 
-### A vector type
+### Un tipo vector
 
 {{index dimensions, "Vec class", coordinates, "vector (exercise)"}}
 
-Write a ((class)) `Vec` that represents a vector in two-dimensional
-space. It takes `x` and `y` parameters (numbers), which it should save
-to properties of the same name.
+Escribe una ((clase)) `Vec` que represente un vector en un espacio
+de dos dimensiones. Toma los parámetros (numericos) `x` y `y`, que debería
+guardar como propiedades del mismo nombre.
 
 {{index addition, subtraction}}
 
-Give the `Vec` prototype two methods, `plus` and `minus`, that take
-another vector as a parameter and return a new vector that has the sum
-or difference of the two vectors' (`this` and the parameter) _x_ and
-_y_ values.
+Dale al prototipo de `Vector` dos métodos, `mas` y `menos`, los cuales toman
+otro vector como parámetro y retornan un nuevo vector que tiene la suma
+o diferencia de los valores _x_ y _y_ de los dos vectores (`this` y el
+parámetro).
 
-Add a ((getter)) property `length` to the prototype that computes the
-length of the vector—that is, the distance of the point (_x_, _y_) from
-the origin (0, 0).
+Agrega una propiedad ((getter)) llamada `longitud` al prototipo que calcule la
+longitud del vector—es decir, la distancia del punto (_x_, _y_) desde
+el origen (0, 0).
 
 {{if interactive
 
 ```{test: no}
 // Your code here.
 
-console.log(new Vec(1, 2).plus(new Vec(2, 3)));
-// → Vec{x: 3, y: 5}
-console.log(new Vec(1, 2).minus(new Vec(2, 3)));
-// → Vec{x: -1, y: -1}
-console.log(new Vec(3, 4).length);
+console.log(new Vector(1, 2).mas(new Vector(2, 3)));
+// → Vector{x: 3, y: 5}
+console.log(new Vector(1, 2).menos(new Vector(2, 3)));
+// → Vector{x: -1, y: -1}
+console.log(new Vector(3, 4).longitud);
 // → 5
 ```
 if}}
@@ -1070,69 +1071,70 @@ if}}
 
 {{index "vector (exercise)"}}
 
-Look back to the `Rabbit` class example if you're unsure how `class`
-declarations look.
+Mira de nuevo al ejemplo de la clase `Conejo` si no recuerdas muy bien
+como se ven las declaraciones de clases.
 
 {{index Pythagoras, "defineProperty function", "square root", "Math.sqrt function"}}
 
-Adding a getter property to the constructor can be done by putting the
-word `get` before the method name. To compute the distance from (0, 0)
-to (x, y), you can use the Pythagorean theorem, which says that the
-square of the distance we are looking for is equal to the square of
-the x-coordinate plus the square of the y-coordinate. Thus, [√(x^2^ +
-y^2^)]{if html}[[$\sqrt{x^2 + y^2}$]{latex}]{if tex} is the number you
-want, and `Math.sqrt` is the way you compute a square root in
-JavaScript.
+Agregar una propiedad getter al constructor se puede hacer al poner la
+palabra `get` antes del nombre del método. Para calcular la distancia desde
+(0, 0) a (x, y), puedes usar el teorema de Pitágoras, que dice que el
+cuadrado de la distancia que estamos buscando es igual al cuadrado de
+la coordenada x más el cuadrado de la coordenada y. Por lo tanto, [√(x^2^ +
+y^2^)]{if html}[[$\sqrt{x^2 + y^2}$]{latex}]{if tex}
+es el número que quieres, y `Math.sqrt` es la forma en que calculas una
+raíz cuadrada en JavaScript.
 
 hint}}
 
-### Groups
+### Conjuntos
 
 {{index "groups (exercise)", "Set class", "Group class", "set (data structure)"}}
 
 {{id groups}}
 
-The standard JavaScript environment provides another data structure
-called `Set`. Like an instance of `Map`, a set holds a collection of
-values. Unlike `Map`, it does not associate other values with those—it
-just tracks which values are part of the set. A value can only be part
-of a set once—adding it again doesn't have any effect.
+El entorno de JavaScript estándar proporciona otra estructura de datos
+llamada `Set` ("Conjunto"). Al igual que una instancia de `Map`,
+un conjunto contiene una colección de valores. Pero a diferencia de `Map`,
+este no asocia valores con otros—este solo rastrea qué valores son parte del
+conjunto. Un valor solo puede ser parte de un conjunto una vez—agregarlo de
+nuevo no tiene ningún efecto.
 
 {{index "add method", "delete method", "has method"}}
 
-Write a class called `Group` (since `Set` is already taken). Like
-`Set`, it has `add`, `delete`, and `has` methods. Its constructor
-creates an empty group, `add` adds a value to the group (but only if
-it isn't already a member), `delete` removes its argument from the
-group (if it was a member), and `has` returns a Boolean value
-indicating whether its argument is a member of the group.
+Escribe una clase llamada `Conjunto`. Como `Set`, debe tener los métodos
+`add` ("añadir"), `delete` ("eliminar"), y `has` ("tiene"). Su constructor
+crea un conjunto vacío, `añadir` agrega un valor al conjunto (pero solo si no
+es ya un miembro), `eliminar` elimina su argumento del
+conjunto (si era un miembro) y `tiene` retorna un valor booleano
+que indica si su argumento es un miembro del conjunto.
 
 {{index "=== operator", "indexOf method"}}
 
-Use the `===` operator, or something equivalent such as `indexOf`, to
-determine whether two values are the same.
+Usa el operador `===`, o algo equivalente como `indexOf`, para
+determinar si dos valores son iguales.
 
 {{index "static method"}}
 
-Give the class a static `from` method that takes an iteratable object
-as argument and creates a group that contains all the values produced
-by iterating over it.
+Proporcionale a la clase un método estático `desde` que tome un objeto iterable
+como argumento y cree un grupo que contenga todos los valores producidos
+al iterar sobre el.
 
 {{if interactive
 
 ```{test: no}
-class Group {
-  // Your code here.
+class Conjunto {
+  // Tu código aquí.
 }
 
-let group = Group.from([10, 20]);
-console.log(group.has(10));
+let conjunto = Conjunto.desde([10, 20]);
+console.log(conjunto.tiene(10));
 // → true
-console.log(group.has(30));
+console.log(conjunto.tiene(30));
 // → false
-group.add(10);
-group.delete(10);
-console.log(group.has(10));
+conjunto.añadir(10);
+conjunto.eliminar(10);
+console.log(conjunto.tiene(10));
 // → false
 ```
 
@@ -1142,55 +1144,55 @@ if}}
 
 {{index "groups (exercise)", "Group class", "indexOf method", "includes method"}}
 
-The easiest way to do this is to store an ((array)) of group members
-in an instance property. The `includes` or `indexOf` methods can be
-used to check whether a given value is in the array.
+La forma más fácil de hacer esto es almacenar un ((array)) con los miembros del
+conjunto en una propiedad de instancia. Los métodos `includes` o `indexOf`
+pueden ser usados para verificar si un valor dado está en el array.
 
 {{index "push method"}}
 
-Your class' ((constructor)) can set the member collection to an empty
-array. When `add` is called, it must check whether the given value is
-in the array, and add it, for example with `push`, otherwise.
+El ((constructor)) de clase puede establecer la colección de miembros como
+un array vacio. Cuando se llama a `añadir`, debes verificar si el valor dado
+esta en el conjunto y agregarlo, por ejemplo con `push`, de lo contrario.
 
 {{index "filter method"}}
 
-Deleting an element from an array, in `delete`, is less
-straightforward, but you can use `filter` to create a new array
-without the value. Don't forget to overwrite the property holding the
-members with the newly filtered version of the array.
+Eliminar un elemento de un array, en `eliminar`, es menos
+sencillo, pero puedes usar `filter` para crear un nuevo array
+sin el valor. No te olvides de sobrescribir la propiedad que
+sostiene los miembros del conjunto con la versión recién filtrada del array.
 
 {{index "for/of loop", "iterable interface"}}
 
-The `from` method can use a `for`/`of` loop to get the values out of
-the iterable object and call `add` to put them into a newly created
-group.
+El método `desde` puede usar un bucle `for`/`of` para obtener los valores de
+el objeto iterable y llamar a `añadir` para ponerlos en un conjunto recien
+creado.
 
 hint}}
 
-### Iterable groups
+### Conjuntos Iterables
 
 {{index "groups (exercise)", interface, "iterator interface", "Group class"}}
 
 {{id group_iterator}}
 
-Make the `Group` class from the previous exercise iterable. Refer back
-to the section about the iterator interface earlier in the chapter if
-you aren't clear on the exact form of the interface anymore.
+Haz iterable la clase `Conjunto` del ejercicio anterior. Puedes remitirte
+a la sección acerca de la interfaz del iterador anteriormente en el capítulo si
+ya no recuerdas muy bien la forma exacta de la interfaz.
 
-If you used an array to represent the group's members, don't just
-return the iterator created by calling the `Symbol.iterator` method on
-the array. That would work, but it defeats the purpose of this exercise.
+Si usaste un array para representar a los miembros del conjunto, no solo
+retornes el iterador creado llamando al método `Symbol.iterator` en
+el array. Eso funcionaría, pero frustra el propósito de este ejercicio.
 
-It is okay if your iterator behaves strangely when the group is
-modified during iteration.
+Está bien si tu iterador se comporta de manera extraña cuando el conjunto es
+modificado durante la iteración.
 
 {{if interactive
 
 ```{test: no}
-// Your code here (and the code from the previous exercise)
+// Tu código aquí (y el codigo del ejercicio anterior)
 
-for (let value of Group.from(["a", "b", "c"])) {
-  console.log(value);
+for (let valor of Conjunto.desde(["a", "b", "c"])) {
+  console.log(valor);
 }
 // → a
 // → b
@@ -1203,36 +1205,36 @@ if}}
 
 {{index "groups (exercise)", "Group class", "next method"}}
 
-It is probably worthwhile to define a new class `GroupIterator`.
-Iterator instances should have a property that tracks the current
-position in the group. Every time `next` is called, it checks whether
-it is done, and if not, moves past the current value and returns it.
+Probablemente valga la pena definir una nueva clase `IteradorConjunto`.
+Las instancias de Iterador deberian tener una propiedad que rastree la
+posición actual en el conjunto. Cada vez que se invoque a `next`, este
+comprueba si está hecho, y si no, se mueve más allá del valor actual y
+lo retorna.
 
-The `Group` class itself gets a method named by `Symbol.iterator`
-that, when called, returns a new instance of the iterator class for
-that group.
+La clase `Conjunto` recibe un método llamado por `Symbol.iterator`
+que, cuando se llama, retorna una nueva instancia de la clase de iterador para
+ese grupo.
 
 hint}}
 
-### Borrowing a method
+### Tomando un método prestado
 
-Earlier in the chapter I mentioned that an object's `hasOwnProperty`
-can be used as a more robust alternative to the `in` operator when you
-want to ignore the prototype's properties. But what if your map needs
-to include the word `"hasOwnProperty"`? You won't be able to call that
-method anymore, because the object's own property hides the method
-value.
+Anteriormente en el capítulo mencioné que el metodo `hasOwnProperty` de un
+objeto puede usarse como una alternativa más robusta al operador `in` cuando
+quieras ignorar las propiedades del prototipo. Pero, ¿y si tu mapa necesita
+incluir la palabra `"hasOwnProperty"`? Ya no podrás llamar a ese
+método ya que la propiedad del objeto oculta el valor del método.
 
-Can you think of a way to call `hasOwnProperty` on an object that has
-its own property by that name?
+¿Puedes pensar en una forma de llamar `hasOwnProperty` en un objeto que tiene
+una propia propiedad con ese nombre?
 
 {{if interactive
 
 ```{test: no}
-let map = {one: true, two: true, hasOwnProperty: true};
+let mapa = {uno: true, dos: true, hasOwnProperty: true};
 
-// Fix this call
-console.log(map.hasOwnProperty("one"));
+// Arregla esta llamada
+console.log(mapa.hasOwnProperty("uno"));
 // → true
 ```
 
@@ -1240,10 +1242,10 @@ if}}
 
 {{hint
 
-Remember that methods that exist on plain objects come from
+Recuerda que los métodos que existen en objetos simples provienen de
 `Object.prototype`.
 
-And that you can call a function with a specific `this` binding by
-using its `call` method.
+Y que puedes llamar a una función con una vinculación `this` específica al
+usar su método `call`.
 
 hint}}
