@@ -1,9 +1,9 @@
-# Regular Expressions
+# Expresiones Regulares
 
 {{quote {author: "Jamie Zawinski", chapter: true}
 
-Some people, when confronted with a problem, think 'I know, I'll use
-regular expressions.' Now they have two problems.
+Algunas personas, cuando confrontadas con un problema, piensan 'Ya sé, usaré
+expresiones regulares.' Ahora tienen dos problemas.
 
 quote}}
 
@@ -13,9 +13,9 @@ quote}}
 
 {{quote {author: "Master Yuan-Ma", title: "The Book of Programming", chapter: true}
 
-Yuan-Ma said, 'When you cut against the grain of the wood, much
-strength is needed. When you program against the grain of the problem,
-much code is needed.'
+Yuan-Ma dijo: 'Cuando cortas contra el grano de la madera, mucha
+fuerza se necesita. Cuando programas contra el grano del problema,
+mucho código se necesita.
 
 quote}}
 
@@ -25,73 +25,74 @@ if}}
 
 {{index evolution, adoption, integration}}
 
-Programming ((tool))s and techniques survive and spread in a chaotic,
-evolutionary way. It's not always the pretty or brilliant ones that
-win but rather the ones that function well enough within the right
-niche or happen to be integrated with another successful piece of
-technology.
+Las ((herramientas)) y técnicas de la programación sobreviven y se propagan de
+una forma caótica y evolutiva. No siempre son los bonitas o las brillantes
+las que ganan, sino más bien las que funcionan lo suficientemente bien
+dentro del nicho correcto o que sucede se integran con otra pieza exitosa de
+tecnología.
 
 {{index "domain-specific language"}}
 
-In this chapter, I will discuss one such tool, _((regular
-expression))s_. Regular expressions are a way to describe ((pattern))s
-in string data. They form a small, separate language that is part of
-JavaScript and many other languages and systems.
+En este capítulo, discutiré una de esas herramientas, _((expresiones regulare))s_.
+Las expresiones regulares son una forma de describir ((patrones)) en datos
+de tipo string. Estas forman un lenguaje pequeño e independiente que es parte de
+JavaScript y de muchos otros lenguajes y sistemas.
 
 {{index [interface, design]}}
 
-Regular expressions are both terribly awkward and extremely useful.
-Their syntax is cryptic, and the programming ((interface)) JavaScript
-provides for them is clumsy. But they are a powerful ((tool)) for
-inspecting and processing strings. Properly understanding regular
-expressions will make you a more effective programmer.
+Las expresiones regulares son terriblemente incómodas y extremadamente útiles.
+Su sintaxis es críptica, y la ((interfaz)) de programación que JavaScript
+proporciona para ellas es torpe. Pero son una poderosa ((herramienta))  para
+inspeccionar y procesar cadenas. Entender apropiadamente a las expresiones
+regulares te hará un programador más efectivo.
 
-## Creating a regular expression
+## Creando una expresión regular
 
 {{index ["regular expression", creation], "RegExp class", "literal expression", "slash character"}}
 
-A regular expression is a type of object. It can either be constructed
-with the `RegExp` constructor or written as a literal value by
-enclosing a pattern in forward slash (`/`) characters.
+Una expresión regular es un tipo de objeto. Puede ser construido
+con el constructor `RegExp` o escrito como un valor literal al
+envolver un patrón en caracteres de barras diagonales (`/`).
 
 ```
 let re1 = new RegExp("abc");
 let re2 = /abc/;
 ```
 
-Both of those regular expression objects represent the same
-((pattern)): an _a_ character followed by a _b_ followed by a _c_.
+Ambos objetos de expresión regular representan el mismo
+((patrón)): un carácter _a_ seguido por una _b_ seguida de una _c_.
 
 {{index "backslash character", "RegExp class"}}
 
-When using the `RegExp` constructor, the pattern is written as a
-normal string, so the usual rules apply for backslashes.
+Cuando se usa el constructor `RegExp`, el patrón se escribe como un
+string normal, por lo que las reglas habituales se aplican a las barras
+invertidas.
 
 {{index ["regular expression", escaping], [escaping, "in regexps"], "slash character"}}
 
-The second notation, where the pattern appears between slash
-characters, treats backslashes somewhat differently. First, since a
-forward slash ends the pattern, we need to put a backslash before any
-forward slash that we want to be _part_ of the pattern. In addition,
-backslashes that aren't part of special character codes (like `\n`)
-will be _preserved_, rather than ignored as they are in strings, and
-change the meaning of the pattern. Some characters, such as question
-marks and plus signs, have special meanings in regular expressions and
-must be preceded by a backslash if they are meant to represent the
-character itself.
+La segunda notación, donde el patrón aparece entre caracteres de barras diagonales,
+trata a las barras invertidas de una forma diferente. Primero, dado que una
+barra diagonal termina el patrón, tenemos que poner una barra invertida antes
+de cualquier barra diagonal que queremos sea _parte_ del patrón. En adición,
+las barras invertidas que no sean parte de códigos especiales de caracteres
+(como `\n`) seran _preservadas_, en lugar de ignoradas, ya que están en strings, y
+cambian el significado del patrón. Algunos caracteres, como los signos de
+interrogación pregunta y los signos de adición, tienen significados especiales
+en las expresiones regulares y deben ir precedidos por una barra inversa
+si se pretende que representen al caracter en sí mismo.
 
 ```
-let eighteenPlus = /eighteen\+/;
+let dieciochoMas = /dieciocho\+/;
 ```
 
-## Testing for matches
+## Probando por coincidencias
 
 {{index matching, "test method", ["regular expression", methods]}}
 
-Regular expression objects have a number of methods. The simplest one
-is `test`. If you pass it a string, it will return a ((Boolean))
-telling you whether the string contains a match of the pattern in the
-expression.
+Los objetos de expresión regular tienen varios métodos. El más simple
+es `test` ("probar"). Si le pasas un string, retornar un ((Booleano))
+diciéndote si el string contiene una coincidencia del patrón en la
+expresión.
 
 ```
 console.log(/abc/.test("abcde"));
@@ -102,109 +103,109 @@ console.log(/abc/.test("abxde"));
 
 {{index pattern}}
 
-A ((regular expression)) consisting of only nonspecial characters
-simply represents that sequence of characters. If _abc_ occurs
-anywhere in the string we are testing against (not just at the start),
-`test` will return `true`.
+Una ((expresión regular)) que consista solamente de caracteres no especiales
+simplemente representara esa secuencia de caracteres. Si _abc_ ocurre
+en cualquier parte del string con la que estamos probando (no solo al comienzo),
+`test` retornara `true`.
 
-## Sets of characters
+## Conjuntos de caracteres
 
 {{index "regular expression", "indexOf method"}}
 
-Finding out whether a string contains _abc_ could just as well be done
-with a call to `indexOf`. Regular expressions allow us to express more
-complicated ((pattern))s.
+Averiguar si un string contiene _abc_ bien podría hacerse con una llamada a
+`indexOf`. Las expresiones regulares nos permiten expresar ((patrones)) más
+complicados.
 
-Say we want to match any ((number)). In a regular expression, putting
-a ((set)) of characters between square brackets makes that part of the
-expression match any of the characters between the brackets.
+Digamos que queremos encontrar cualquier ((número)). En una expresión regular,
+poner un ((conjunto)) de caracteres entre corchetes hace que esa parte de la
+expresión coincida con cualquiera de los caracteres entre los corchetes.
 
-Both of the following expressions match all strings that contain a ((digit)):
+Ambas expresiones coincidiran con todas los strings que contengan un ((dígito)):
 
 ```
-console.log(/[0123456789]/.test("in 1992"));
+console.log(/[0123456789]/.test("en 1992"));
 // → true
-console.log(/[0-9]/.test("in 1992"));
+console.log(/[0-9]/.test("en 1992"));
 // → true
 ```
 
 {{index "dash character"}}
 
-Within square brackets, a dash (`-`) between two characters can be
-used to indicate a ((range)) of characters, where the ordering is
-determined by the character's ((Unicode)) number. Characters 0 to 9
-sit right next to each other in this ordering (codes 48 to 57), so
-`[0-9]` covers all of them and matches any ((digit)).
+Dentro de los corchetes, un guion (`-`) entre dos caracteres puede ser
+utilizado para indicar un ((rango)) de caracteres, donde el orden es
+determinado por el número ((Unicode)) del carácter. Los caracteres 0 a 9
+estan uno al lado del otro en este orden (códigos 48 a 57), por lo que
+`[0-9]` los cubre a todos y coincide con cualquier ((dígito)).
 
 {{index whitespace, "alphanumeric character", "period character"}}
 
-A number of common character groups have their own
-built-in shortcuts. Digits are one of them: `\d` means the same thing
-as `[0-9]`.
+Un numero de caracteres comunes tienen sus propios atajos incorporados.
+Los dígitos son uno de ellos: `\d` significa lo mismo que `[0-9]`.
 
 {{index "newline character"}}
 
 {{table {cols: [1, 5]}}}
 
-| `\d`    | Any ((digit)) character
-| `\w`    | An alphanumeric character ("((word character))")
-| `\s`    | Any ((whitespace)) character (space, tab, newline, and similar)
-| `\D`    | A character that is _not_ a digit
-| `\W`    | A nonalphanumeric character
-| `\S`    | A nonwhitespace character
-| `.`     | Any character except for newline
+| `\d`    | Cualquier caracter ((dígito))
+| `\w`    | Un caracter alfanumérico
+| `\s`    | Cualquier carácter de espacio en blanco (espacio, tabulación, nueva línea y similar)
+| `\D`    | Un caracter que _no_ es un dígito
+| `\W`    | Un caracter no alfanumérico
+| `\S`    | Un caracter que no es un espacio en blanco
+| `.`     | Cualquier caracter a excepción de una nueva línea
 
-So you could match a ((date)) and ((time)) format like 30-01-2003
-15:20 with the following expression:
+Por lo que podrías coincidir con un formato de ((fecha)) y ((hora)) como 30-01-2003
+15:20 con la siguiente expresión:
 
 ```
-let dateTime = /\d\d-\d\d-\d\d\d\d \d\d:\d\d/;
-console.log(dateTime.test("30-01-2003 15:20"));
+let fechaHora = /\d\d-\d\d-\d\d\d\d \d\d:\d\d/;
+console.log(fechaHora.test("30-01-2003 15:20"));
 // → true
-console.log(dateTime.test("30-jan-2003 15:20"));
+console.log(fechaHora.test("30-jan-2003 15:20"));
 // → false
 ```
 
 {{index "backslash character"}}
 
-That looks completely awful, doesn't it? Half of it is backslashes,
-producing a background noise that makes it hard to spot the actual
-((pattern)) expressed. We'll see a slightly improved version of this
-expression [later](regexp#date_regexp_counted).
+Eso se ve completamente horrible, no? La mitad de la expresión son barras invertidas,
+produciendo un ruido de fondo que hace que sea difícil detectar el ((patrón))
+real que queremos expresar. Veremos una versión ligeramente mejorada de esta
+expresión [más tarde](regexp#date_regexp_counted).
 
 {{index [escaping, "in regexps"], "regular expression", set}}
 
-These backslash codes can also be used inside ((square brackets)). For
-example, `[\d.]` means any digit or a period character. But the period
-itself, between square brackets, loses its special meaning. The same
-goes for other special characters, such as `+`.
+Estos códigos de barra invertida también pueden usarse dentro de ((corchetes)).
+Por ejemplo, `[\d.]` representa cualquier dígito o un carácter de punto.
+Pero el punto en sí mismo, entre corchetes, pierde su significado especial.
+Lo mismo va para otros caracteres especiales, como `+`.
 
 {{index "square brackets", inversion, "caret character"}}
 
-To _invert_ a set of characters—that is, to express that you want to
-match any character _except_ the ones in the set—you can write a caret
-(`^`) character after the opening bracket.
+Para _invertir_ un conjunto de caracteres, es decir, para expresar que deseas
+coincidir con cualquier carácter _excepto_  con los que están en el
+conjunto—puedes escribir un carácter de intercalación (`^`) después del
+corchete de apertura.
 
 ```
-let notBinary = /[^01]/;
-console.log(notBinary.test("1100100010100110"));
+let noBinario = /[^01]/;
+console.log(noBinario.test("1100100010100110"));
 // → false
-console.log(notBinary.test("1100100010200110"));
+console.log(noBinario.test("1100100010200110"));
 // → true
 ```
 
-## Repeating parts of a pattern
+## Repitiendo partes de un patrón
 
 {{index ["regular expression", repetition]}}
 
-We now know how to match a single digit. What if we want to match a
-whole number—a ((sequence)) of one or more ((digit))s?
+Ya sabemos cómo hacer coincidir un solo dígito. Qué pasa si queremos hacer
+coincidir un número completo—una ((secuencia)) de uno o más ((dígito))s?
 
 {{index "plus character", repetition, "+ operator"}}
 
-When you put a plus sign (`+`) after something in a regular
-expression, it indicates that the element may be repeated more than
-once. Thus, `/\d+/` matches one or more digit characters.
+Cuando pones un signo más (`+`) después de algo en una expresión regular,
+este indica que el elemento puede repetirse más de
+una vez. Por lo tanto, `/\d+/` coincide con uno o más caracteres de dígitos.
 
 ```
 console.log(/'\d+'/.test("'123'"));
@@ -219,159 +220,161 @@ console.log(/'\d*'/.test("''"));
 
 {{index "* operator", asterisk}}
 
-The star (`*`) has a similar meaning but also allows the pattern to
-match zero times. Something with a star after it never prevents a
-pattern from matching—it'll just match zero instances if it can't find
-any suitable text to match.
+La estrella (`*`) tiene un significado similar pero también permite que el
+patrón coincida cero veces. Algo con una estrella después de el nunca evitara un
+patrón de coincidirlo—este solo coincidirá con cero instancias si no
+puede encontrar ningun texto adecuado para coincidir.
 
 {{index "British English", "American English", "question mark"}}
 
-A question mark makes a part of a pattern _((optional))_, meaning it
-may occur zero times or one time. In the following example, the _u_
-character is allowed to occur, but the pattern also matches when it is
-missing.
+Un signo de interrogación hace que alguna parte de un patrón sea _((opcional))_,
+lo que significa que puede ocurrir cero o mas veces. En el siguiente ejemplo,
+el carácter _h_ está permitido, pero el patrón también retorna verdadero
+cuando esta letra no esta.
 
 ```
-let neighbor = /neighbou?r/;
-console.log(neighbor.test("neighbour"));
+let reusar = /reh?usar/;
+console.log(reusar.test("rehusar"));
 // → true
-console.log(neighbor.test("neighbor"));
+console.log(reusar.test("reusar"));
 // → true
 ```
 
 {{index repetition, "curly braces"}}
 
-To indicate that a pattern should occur a precise number of times, use
-curly braces. Putting `{4}` after an element, for example, requires it
-to occur exactly four times. It is also possible to specify a
-((range)) this way: `{2,4}` means the element must occur at least
-twice and at most four times.
+Para indicar que un patrón deberia ocurrir un número preciso de veces, usa
+llaves. Por ejemplo, al poner `{4}` después de un elemento, hace que requiera
+que este ocurra exactamente cuatro veces. También es posible especificar un
+((rango)) de esta manera: `{2,4}` significa que el elemento debe ocurrir al
+menos dos veces y como máximo cuatro veces.
 
 {{id date_regexp_counted}}
 
-Here is another version of the ((date)) and ((time)) pattern that
-allows both single- and double-((digit)) days, months, and hours. It
-is also slightly easier to decipher.
+Aquí hay otra versión del patrón ((fecha)) y ((hora)) que
+permite días tanto en ((dígitos)) individuales como dobles, meses y horas.
+Es también un poco más fácil de descifrar.
 
 ```
-let dateTime = /\d{1,2}-\d{1,2}-\d{4} \d{1,2}:\d{2}/;
-console.log(dateTime.test("30-1-2003 8:45"));
+let fechaHora = /\d{1,2}-\d{1,2}-\d{4} \d{1,2}:\d{2}/;
+console.log(fechaHora.test("30-1-2003 8:45"));
 // → true
 ```
 
-You can also specify open-ended ((range))s when using ((curly braces))
-by omitting the number after the comma. So, `{5,}` means five or more
-times.
+También puedes especificar ((rangos)) de final abierto al usar ((llaves))
+omitiendo el número después de la coma. Entonces, `{5,}` significa cinco o más
+veces.
 
-## Grouping subexpressions
+## Agrupando subexpresiones
 
 {{index ["regular expression", grouping], grouping}}
 
-To use an operator like `*` or `+` on more than one element at a time,
-you have to use ((parentheses)). A part of a regular expression that
-is enclosed in parentheses counts as a single element as far as the
-operators following it are concerned.
+Para usar un operador como `*` o `+` en más de un elemento a la vez,
+tienes que usar ((paréntesis)). Una parte de una expresión regular que
+se encierre entre paréntesis cuenta como un elemento único en cuanto a
+los operadores que la siguen están preocupados.
 
 ```
-let cartoonCrying = /boo+(hoo+)+/i;
-console.log(cartoonCrying.test("Boohoooohoohooo"));
+let caricaturaLlorando = /boo+(hoo+)+/i;
+console.log(caricaturaLlorando.test("Boohoooohoohooo"));
 // → true
 ```
 
 {{index crying}}
 
-The first and second `+` characters apply only to the second _o_ in
-_boo_ and _hoo_, respectively. The third `+` applies to the whole
-group `(hoo+)`, matching one or more sequences like that.
+El primer y segundo caracter `+` aplican solo a la segunda _o_ en
+_boo_ y _hoo_, respectivamente. El tercer `+` se aplica a la totalidad
+del grupo `(hoo+)`, haciendo coincidir una o más secuencias como esa.
 
 {{index "case sensitivity", capitalization, ["regular expression", flags]}}
 
-The `i` at the end of the expression in the example makes this regular
-expression case insensitive, allowing it to match the uppercase _B_ in
-the input string, even though the pattern is itself all lowercase.
+La `i` al final de la expresión en el ejemplo hace que esta expresión regular
+sea insensible a mayúsculas y minúsculas, lo que permite que coincida con la
+letra mayúscula _B_ en el string que se le da de entrada, asi el
+patrón en sí mismo este en minúsculas.
 
-## Matches and groups
+## Coincidencias y grupos
 
 {{index ["regular expression", grouping], "exec method", array}}
 
-The `test` method is the absolute simplest way to match a regular
-expression. It tells you only whether it matched and nothing else.
-Regular expressions also have an `exec` (execute) method that will
-return `null` if no match was found and return an object with
-information about the match otherwise.
+El método `test` es la forma más simple de hacer coincidir una
+expresión. Solo te dice si coincide y nada más.
+Las expresiones regulares también tienen un método `exec` ("ejecutar") que
+retorna `null` si no se encontró una coincidencia y retorna un objeto con
+información sobre la coincidencia de lo contrario.
 
 ```
-let match = /\d+/.exec("one two 100");
-console.log(match);
+let coincidencia = /\d+/.exec("uno dos 100");
+console.log(coincidencia);
 // → ["100"]
-console.log(match.index);
+console.log(coincidencia.index);
 // → 8
 ```
 
 {{index "index property", [string, indexing]}}
 
-An object returned from `exec` has an `index` property that tells us
-_where_ in the string the successful match begins. Other than that,
-the object looks like (and in fact is) an array of strings, whose
-first element is the string that was matched—in the previous example,
-this is the sequence of ((digit))s that we were looking for.
+Un objeto retornado por `exec` tiene una propiedad `index` ("indice") que nos
+dice _donde_ en el string comienza la coincidencia exitosa. Aparte de eso,
+el objeto parece (y de hecho es) un array de strings, cuyo
+primer elemento es el string que coincidio—en el ejemplo anterior,
+esta es la secuencia de ((dígito))s que estábamos buscando.
 
 {{index [string, methods], "match method"}}
 
-String values have a `match` method that behaves similarly.
+Los valores de tipo string tienen un método `match` que se comporta de
+manera similar.
 
 ```
-console.log("one two 100".match(/\d+/));
+console.log("uno dos 100".match(/\d+/));
 // → ["100"]
 ```
 
 {{index grouping, "capture group", "exec method"}}
 
-When the regular expression contains subexpressions grouped with
-parentheses, the text that matched those groups will also show up in
-the array. The whole match is always the first element. The next
-element is the part matched by the first group (the one whose opening
-parenthesis comes first in the expression), then the second group, and
-so on.
+Cuando la expresión regular contenga subexpresiones agrupadas con
+paréntesis, el texto que coincida con esos grupos también aparecerá en
+el array. La coincidencia completa es siempre el primer elemento. El siguiente
+elemento es la parte que coincidio con el primer grupo (el que abre
+paréntesis primero en la expresión), luego el segundo grupo, y
+asi sucesivamente.
 
 ```
-let quotedText = /'([^']*)'/;
-console.log(quotedText.exec("she said 'hello'"));
-// → ["'hello'", "hello"]
+let textoCitado = /'([^']*)'/;
+console.log(textoCitado.exec("ella dijo 'hola'"));
+// → ["'hola'", "hola"]
 ```
 
 {{index "capture group"}}
 
-When a group does not end up being matched at all (for example, when
-followed by a question mark), its position in the output array will
-hold `undefined`. Similarly, when a group is matched multiple times,
-only the last match ends up in the array.
+Cuando un grupo no termina siendo emparejado en absoluto (por ejemplo, cuando
+es seguido de un signo de interrogación), su posición en el array de salida
+sera `undefined`. Del mismo modo, cuando un grupo coincida multiples veces,
+solo la ultima coincidencia termina en el array.
 
 ```
-console.log(/bad(ly)?/.exec("bad"));
-// → ["bad", undefined]
+console.log(/mal(isimo)?/.exec("mal"));
+// → ["mal", undefined]
 console.log(/(\d)+/.exec("123"));
 // → ["123", "3"]
 ```
 
 {{index "exec method", ["regular expression", methods], extraction}}
 
-Groups can be useful for extracting parts of a string. If we don't
-just want to verify whether a string contains a ((date)) but also
-extract it and construct an object that represents it, we can wrap
-parentheses around the digit patterns and directly pick the date out
-of the result of `exec`.
+Los grupos pueden ser útiles para extraer partes de un string. Si no solo
+queremos verificar si un string contiene una ((fecha)) pero también
+extraerla y construir un objeto que la represente, podemos envolver
+paréntesis alrededor de los patrones de dígitos y tomar directamente la fecha
+del resultado de `exec`.
 
-But first, a brief detour, in which we discuss the built-in way to
-represent date and ((time)) values in JavaScript.
+Pero primero, un breve desvío, en el que discutiremos la forma incorporada de
+representar valores de fecha y ((hora)) en JavaScript.
 
-## The Date class
+## La clase Date ("Fecha")
 
 {{index constructor, "Date class"}}
 
-JavaScript has a standard class for representing ((date))s—or rather,
-points in ((time)). It is called `Date`. If you simply create a date
-object using `new`, you get the current date and time.
+JavaScript tiene una clase estándar para representar ((fecha))s—o mejor dicho,
+puntos en el ((tiempo)). Se llama `Date`. Si simplemente creas un objeto
+fecha usando `new`, obtienes la fecha y hora actual.
 
 ```{test: no}
 console.log(new Date());
@@ -380,7 +383,7 @@ console.log(new Date());
 
 {{index "Date class"}}
 
-You can also create an object for a specific time.
+También puedes crear un objeto para un tiempo específico.
 
 ```
 console.log(new Date(2009, 11, 9));
@@ -391,20 +394,21 @@ console.log(new Date(2009, 11, 9, 12, 59, 59, 999));
 
 {{index "zero-based counting", [interface, design]}}
 
-JavaScript uses a convention where month numbers start at zero (so
-December is 11), yet day numbers start at one. This is confusing and
-silly. Be careful.
+JavaScript usa una convención en donde los números de los meses comienzan en
+cero (por lo que Diciembre es 11), sin embargo, los números de los días
+comienzan en uno. Esto es confuso y tonto. Ten cuidado.
 
-The last four arguments (hours, minutes, seconds, and milliseconds)
-are optional and taken to be zero when not given.
+Los últimos cuatro argumentos (horas, minutos, segundos y milisegundos)
+son opcionales y se toman como cero cuando no se dan.
 
 {{index "getTime method"}}
 
-Timestamps are stored as the number of milliseconds since the start of
-1970, in the UTC ((time zone)). This follows a convention set by
-"((Unix time))", which was invented around that time. You can use
-negative numbers for times before 1970. The `getTime` method on a date
-object returns this number. It is big, as you can imagine.
+Las marcas de tiempo se almacenan como la cantidad de milisegundos desde el
+inicio de 1970, en la ((zona horaria)) UTC. Esto sigue una convención
+establecida por el "((Tiempo Unix))", el cual se inventó en ese momento.
+Puedes usar números negativos para los tiempos anteriores a 1970. Usar el método
+`getTime` ("obtenerTiempo") en un objeto fecha retorna este número.
+Es bastante grande, como te puedes imaginar.
 
 ```
 console.log(new Date(2013, 11, 19).getTime());
@@ -415,37 +419,40 @@ console.log(new Date(1387407600000));
 
 {{index "Date.now function", "Date class"}}
 
-If you give the `Date` constructor a single argument, that argument is
-treated as such a millisecond count. You can get the current
-millisecond count by creating a new `Date` object and calling
-`getTime` on it or by calling the `Date.now` function.
+Si le das al constructor `Date` un único argumento, ese argumento sera
+tratado como un conteo de milisegundos. Puedes obtener el recuento
+de milisegundos actual creando un nuevo objeto `Date` y llamando
+`getTime` en él o llamando a la función `Date.now`.
 
 {{index "getFullYear method", "getMonth method", "getDate method", "getHours method", "getMinutes method", "getSeconds method", "getYear method"}}
 
-Date objects provide methods like `getFullYear`, `getMonth`,
-`getDate`, `getHours`, `getMinutes`, and `getSeconds` to extract their
-components. Besides `getFullYear`, there's also `getYear`, which gives
-you a rather useless two-digit year value (such as `93` or `14`).
+Los objetos de fecha proporcionan métodos como `getFullYear`
+("obtenerAñoCompleto"), `getMonth` ("obtenerMes"), `getDate` ("obtenerFecha"),
+`getHours` ("obtenerHoras"), `getMinutes` ("obtenerMinutos"), y `getSeconds`
+("obtenerSegundos") para extraer sus componentes. Además de `getFullYear`,
+también existe `getYear` ("obtenerAño"), que te da como resultado un valor
+de año de dos dígitos bastante inútil (como `93` o `14`).
 
 {{index "capture group", "getDate function"}}
 
-Putting ((parentheses)) around the parts of the expression that we are
-interested in, we can now create a date object from a string.
+Al poner ((paréntesis)) alrededor de las partes de la expresión en las que
+estamos interesados, ahora podemos crear un objeto de fecha a partir de un
+string.
 
 ```
-function getDate(string) {
-  let [_, day, month, year] =
+function obtenerFecha(string) {
+  let [_, dia, mes, año] =
     /(\d{1,2})-(\d{1,2})-(\d{4})/.exec(string);
-  return new Date(year, month - 1, day);
+  return new Date(año, mes - 1, dia);
 }
-console.log(getDate("30-1-2003"));
+console.log(obtenerFecha("30-1-2003"));
 // → Thu Jan 30 2003 00:00:00 GMT+0100 (CET)
 ```
 
 {{index destructuring, "underscore character"}}
 
-The `_` (underscore) binding is ignored, and only used to skip the
-full match element in the array returned by `exec`.
+La vinculación `_` (guion bajo) es ignorada, y solo se usa para omitir el
+elemento de coincidencia completa en el array retornado por `exec`.
 
 ## Word and string boundaries
 
