@@ -135,7 +135,7 @@
   <span class="cm-variable">lanzarMisiles</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>() {<span class="cm-comment">/* no hacer nada */</span>};
 }</pre>
 
-<p><a class="p_ident" id="p_XQHm85z6jp" href="#p_XQHm85z6jp" tabindex="-1" role="presentation"></a>En el <a href="orden_superior">Capitulo 5</a>, discutiremos las cosas interesantes que se pueden hacer al pasar valores de función a otras funciones.</p>
+<p><a class="p_ident" id="p_XQHm85z6jp" href="#p_XQHm85z6jp" tabindex="-1" role="presentation"></a>En el <a href="05_orden_superior.html">Capitulo 5</a>, discutiremos las cosas interesantes que se pueden hacer al pasar valores de función a otras funciones.</p>
 
 <h2><a class="h_ident" id="h_tewMxJao9I" href="#h_tewMxJao9I" tabindex="-1" role="presentation"></a>Notación de declaración</h2>
 
@@ -182,7 +182,7 @@
   <span class="cm-variable">console</span>.<span class="cm-property">log</span>(<span class="cm-string">&quot;Toot&quot;</span>);
 };</pre>
 
-<p><a class="p_ident" id="p_z2Al7cD/Fu" href="#p_z2Al7cD/Fu" tabindex="-1" role="presentation"></a>No hay una buena razón para tener ambas funciones de flecha y expresiones <code>function</code> en el lenguaje. Aparte de un detalle menor, que discutiremos en <a href="objeto">Capítulo 6</a>, estas hacen lo mismo. Las funciones de flecha se agregaron en 2015, principalmente para que fuera posible escribir pequeñas expresiones de funciones de una manera menos verbosa. Las usaremos mucho en el <a href="orden_superior">Capitulo 5</a>.</p>
+<p><a class="p_ident" id="p_z2Al7cD/Fu" href="#p_z2Al7cD/Fu" tabindex="-1" role="presentation"></a>No hay una buena razón para tener ambas funciones de flecha y expresiones <code>function</code> en el lenguaje. Aparte de un detalle menor, que discutiremos en <a href="06_objeto.html">Capítulo 6</a>, estas hacen lo mismo. Las funciones de flecha se agregaron en 2015, principalmente para que fuera posible escribir pequeñas expresiones de funciones de una manera menos verbosa. Las usaremos mucho en el <a href="05_orden_superior.html">Capitulo 5</a>.</p>
 
 <h2 id="stack"><a class="h_ident" id="h_nePB5S+L1Q" href="#h_nePB5S+L1Q" tabindex="-1" role="presentation"></a>La pila de llamadas</h2>
 
@@ -552,7 +552,7 @@ llamadas</em>. Cada vez que se llama a una función, el contexto actual es almac
 
 <div class="solution"><div class="solution-text">
 
-<p><a class="p_ident" id="p_+l6f4rOSrt" href="#p_+l6f4rOSrt" tabindex="-1" role="presentation"></a>Es probable que tu función se vea algo similar a la función interna <code>encontrar</code> en la función recursiva <code>encontrarSolucion</code> de <a href="funciones#recursive_puzzle">ejemplo</a> en este capítulo, con una cadena <code>if</code>/<code>else if</code>/<code>else</code> que prueba cuál de los tres casos aplica. El <code>else</code> final, correspondiente al tercer caso, hace la llamada recursiva. Cada una de las ramas debe contener una declaración de <code>return</code> u organizarse de alguna otra manera para que un valor específico sea retornado.</p>
+<p><a class="p_ident" id="p_+l6f4rOSrt" href="#p_+l6f4rOSrt" tabindex="-1" role="presentation"></a>Es probable que tu función se vea algo similar a la función interna <code>encontrar</code> en la función recursiva <code>encontrarSolucion</code> de <a href="03_funciones.html#recursive_puzzle">ejemplo</a> en este capítulo, con una cadena <code>if</code>/<code>else if</code>/<code>else</code> que prueba cuál de los tres casos aplica. El <code>else</code> final, correspondiente al tercer caso, hace la llamada recursiva. Cada una de las ramas debe contener una declaración de <code>return</code> u organizarse de alguna otra manera para que un valor específico sea retornado.</p>
 
 <p><a class="p_ident" id="p_1HwCJyldCw" href="#p_1HwCJyldCw" tabindex="-1" role="presentation"></a>Cuando se le dé un número negativo, la función volverá a repetirse una y otra vez, pasándose a si misma un número cada vez más negativo, quedando así más y más lejos de devolver un resultado. Eventualmente quedandose sin espacio en la pila y abortando el programa.</p>
 
