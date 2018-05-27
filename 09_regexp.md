@@ -814,336 +814,342 @@ se pueden rastrear a intencionalmente usar un operador codicioso, donde uno
 que no sea codicioso trabajaria mejor. Al usar un operador de ((repetición)),
 considera la variante no-codiciosa primero.
 
-## Dynamically creating RegExp objects
+## Creando objetos RegExp dinámicamente
 
 {{index ["regular expression", creation], "underscore character", "RegExp class"}}
 
-There are cases where you might not know the exact ((pattern)) you
-need to match against when you are writing your code. Say you want to
-look for the user's name in a piece of text and enclose it in
-underscore characters to make it stand out. Since you will know the
-name only once the program is actually running, you can't use the
-slash-based notation.
+Hay casos en los que quizás no sepas el ((patrón)) exacto
+necesario para coincidir cuando estes escribiendo tu código. Imagina
+que quieres buscar el nombre del usuario en un texto y encerrarlo en
+caracteres de subrayado para que se destaque. Como solo sabrás el
+nombrar una vez que el programa se está ejecutando realmente, no puedes
+usar la notación basada en barras.
 
-But you can build up a string and use the `RegExp` ((constructor)) on
-that. Here's an example:
+Pero puedes construir un string y usar el ((constructor)) `RegExp` en el.
+Aquí hay un ejemplo:
 
 ```
-let name = "harry";
-let text = "Harry is a suspicious character.";
-let regexp = new RegExp("\\b(" + name + ")\\b", "gi");
-console.log(text.replace(regexp, "_$1_"));
-// → _Harry_ is a suspicious character.
+let nombre = "harry";
+let texto = "Harry es un personaje sospechoso.";
+let regexp = new RegExp("\\b(" + nombre + ")\\b", "gi");
+console.log(texto.replace(regexp, "_$1_"));
+// → _Harry_ es un personaje sospechoso.
 ```
 
 {{index ["regular expression", flags], "backslash character"}}
 
-When creating the `\b` ((boundary)) markers, we have to use two
-backslashes because we are writing them in a normal string, not a
-slash-enclosed regular expression. The second argument to the `RegExp`
-constructor contains the options for the regular expression—in this
-case, `"gi"` for global and case-insensitive.
+Al crear los marcadores de ((límite)) `\b`, tenemos que usar dos
+barras invertidas porque las estamos escribiendo en un string normal, no en una
+expresión regular contenida en barras. El segundo argumento para el
+constructor `RegExp` contiene las opciones para la expresión regular—en este
+caso, `"gi"` para global e insensible a mayúsculas y minúsculas.
 
-But what if the name is `"dea+hl[]rd"` because our user is a ((nerd))y
-teenager? That would result in a nonsensical regular expression that
-won't actually match the user's name.
+Pero, y si el nombre es `"dea+hl[]rd"` porque nuestro usuario es un ((nerd))
+adolescente? Eso daría como resultado una expresión regular sin sentido que
+en realidad no coincidirá con el nombre del usuario.
 
 {{index "backslash character", [escaping, "in regexps"], ["regular expression", escaping]}}
 
-To work around this, we can add backslashes before any character that
-has a special meaning.
+Para solucionar esto, podemos agregar barras diagonales inversas antes de
+cualquier caracter que tenga un significado especial.
 
 ```
-let name = "dea+hl[]rd";
-let text = "This dea+hl[]rd guy is super annoying.";
-let escaped = name.replace(/[\\[.+*?(){|^$]/g, "\\$&");
-let regexp = new RegExp("\\b" + escaped + "\\b", "gi");
-console.log(text.replace(regexp, "_$&_"));
-// → This _dea+hl[]rd_ guy is super annoying.
+let nombre = "dea+hl[]rd";
+let texto = "Este sujeto dea+hl[]rd es super fastidioso.";
+let escapados = nombre.replace(/[\\[.+*?(){|^$]/g, "\\$&");
+let regexp = new RegExp("\\b" + escapados + "\\b", "gi");
+console.log(texto.replace(regexp, "_$&_"));
+// → Este sujeto _dea+hl[]rd_ es super fastidioso.
 ```
 
-## The search method
+## El método search
 
 {{index searching, ["regular expression", methods], "indexOf method", "search method"}}
 
-The `indexOf` method on strings cannot be called with a regular
-expression. But there is another method, `search`, that does expect a
-regular expression. Like `indexOf`, it returns the first index on
-which the expression was found, or -1 when it wasn't found.
+El método `indexOf` en strings no puede invocarse con una expresión regular.
+Pero hay otro método, `search` ("buscar"), que espera una expresión regular.
+Al igual que `indexOf`, retorna el primer índice en
+que se encontró la expresión, o -1 cuando no se encontró.
 
 ```
-console.log("  word".search(/\S/));
+console.log("  palabra".search(/\S/));
 // → 2
 console.log("    ".search(/\S/));
 // → -1
 ```
 
-Unfortunately, there is no way to indicate that the match should start
-at a given offset (like we can with the second argument to `indexOf`),
-which would often be useful.
+Desafortunadamente, no hay forma de indicar que la coincidencia debería comenzar
+a partir de un desplazamiento dado (como podemos con el segundo argumento para
+`indexOf`), que a menudo sería útil.
 
-## The lastIndex property
+## La propiedad lastIndex
 
 {{index "exec method", "regular expression"}}
 
-The `exec` method similarly does not provide a convenient way to start
-searching from a given position in the string. But it does provide an
-*in*convenient way.
+De manera similar el método `exec` no proporciona una manera conveniente de
+comenzar buscando desde una posición dada en el string. Pero proporciona una
+manera *in*conveniente.
 
-{{index ["regular expression", matching], matching, "source property", "lastIndex property"}}
+{{index ["regular expression", matching], matching, "source property", "lastIndex property*"}}
 
-Regular expression objects have properties. One such property is
-`source`, which contains the string that expression was created from.
-Another property is `lastIndex`, which controls, in some limited
-circumstances, where the next match will start.
+Los objetos de expresión regular tienen propiedades. Una de esas propiedades es
+`source` ("fuente"), que contiene el string de donde se creó la expresión.
+Otra propiedad es `lastIndex` ("ultimoIndice"), que controla, en algunas
+circunstancias limitadas, donde comenzará la siguiente coincidencia.
 
 {{index [interface, design], "exec method", ["regular expression", global]}}
 
-Those circumstances are that the regular expression must have the
-global (`g`) or sticky (`y`) option enabled, and the match must happen
-through the `exec` method. Again, a less confusing solution would have
-been to just allow an extra argument to be passed to `exec`, but
-confusion is an essential feature of JavaScript's regular expression
-interface.
+Esas circunstancias son que la expresión regular debe tener la opción global
+(`g`) o adhesiva (`y`) habilitada, y la coincidencia debe suceder
+a través del método `exec`. De nuevo, una solución menos confusa hubiese
+sido permitir que un argumento adicional fuera pasado a `exec`, pero
+la confusión es una característica esencial de la interfaz de las
+expresiones regulares de JavaScript.
 
 ```
-let pattern = /y/g;
-pattern.lastIndex = 3;
-let match = pattern.exec("xyzzy");
-console.log(match.index);
+let patron = /y/g;
+patron.lastIndex = 3;
+let coincidencia = patron.exec("xyzzy");
+console.log(coincidencia.index);
 // → 4
-console.log(pattern.lastIndex);
+console.log(patron.lastIndex);
 // → 5
 ```
 
 {{index "side effect", "lastIndex property"}}
 
-If the match was successful, the call to `exec` automatically updates
-the `lastIndex` property to point after the match. If no match was
-found, `lastIndex` is set back to zero, which is also the value it has
-in a newly constructed regular expression object.
+Si la coincidencia fue exitosa, la llamada a `exec` actualiza automáticamente
+a la propiedad `lastIndex` para que apunte después de la coincidencia. Si no
+se encontraron coincidencias, `lastIndex` vuelve a cero, que es también el
+valor que tiene un objeto de expresión regular recién construido.
 
-The difference between the global and the sticky options is that, when
-sticky is enabled, the match will only succeed if it starts directly
-at `lastIndex`, whereas with global, it will search ahead for a
-position where a match can start.
+La diferencia entre las opciones globales y las adhesivas es que, cuandoa
+adhesivo está habilitado, la coincidencia solo tendrá éxito si comienza
+directamente en `lastIndex`, mientras que con global, buscará una
+posición donde pueda comenzar una coincidencia.
 
 ```
 let global = /abc/g;
 console.log(global.exec("xyz abc"));
 // → ["abc"]
-let sticky = /abc/y;
-console.log(sticky.exec("xyz abc"));
+let adhesivo = /abc/y;
+console.log(adhesivo.exec("xyz abc"));
 // → null
 ```
 
 {{index bug}}
 
-When using a shared regular expression value for multiple `exec`
-calls, these automatic updates to the `lastIndex` property can cause
-problems. Your regular expression might be accidentally starting at an
-index that was left over from a previous call.
+Cuando se usa un valor de expresión regular compartido para múltiples llamadas
+a `exec`, estas actualizaciones automáticas a la propiedad `lastIndex` pueden
+causar problemas. Tu expresión regular podría estar accidentalmente comenzando
+en un índice que quedó de una llamada anterior.
 
 ```
-let digit = /\d/g;
-console.log(digit.exec("here it is: 1"));
+let digito = /\d/g;
+console.log(digito.exec("aqui esta: 1"));
 // → ["1"]
-console.log(digit.exec("and now: 1"));
+console.log(digito.exec("y ahora: 1"));
 // → null
 ```
 
 {{index ["regular expression", global], "match method"}}
 
-Another interesting effect of the global option is that it changes the
-way the `match` method on strings works. When called with a global
-expression, instead of returning an array similar to that returned by
-`exec`, `match` will find _all_ matches of the pattern in the string
-and return an array containing the matched strings.
+Otro efecto interesante de la opción global es que cambia la
+forma en que funciona el método `match` en strings. Cuando se llama con una
+expresión global, en lugar de retornar un matriz similar al retornado por
+`exec`,` match` encontrará _todas_ las coincidencias del patrón en el string
+y retornar un array que contiene los strings coincidentes.
 
 ```
 console.log("Banana".match(/an/g));
 // → ["an", "an"]
 ```
 
-So be cautious with global regular expressions. The cases where they
-are necessary—calls to `replace` and places where you want to
-explicitly use `lastIndex`—are typically the only places where you
-want to use them.
+Por lo tanto, ten cuidado con las expresiones regulares globales. Los casos
+donde son necesarias—llamadas a `replace` y lugares donde deseas
+explícitamente usar `lastIndex`—son generalmente los únicos lugares donde
+querras usarlas.
 
-### Looping over matches
+### Ciclos sobre coincidencias
 
 {{index "lastIndex property", "exec method", loop}}
 
-A common thing to do is to scan through all occurrences of a pattern
-in a string, in a way that gives us access to the match object in the
-loop body. We can do this by using `lastIndex` and `exec`.
+Una cosa común que hacer es escanear todas las ocurrencias de un patrón
+en un string, de una manera que nos de acceso al objeto de coincidencia en el
+cuerpo del ciclo. Podemos hacer esto usando `lastIndex` y `exec`.
 
 ```
-let input = "A string with 3 numbers in it... 42 and 88.";
-let number = /\b\d+\b/g;
-let match;
-while (match = number.exec(input)) {
-  console.log("Found", match[0], "at", match.index);
+let entrada = "Un string con 3 numeros en el... 42 y 88.";
+let numero = /\b\d+\b/g;
+let coincidencia;
+while (coincidencia = numero.exec(entrada)) {
+  console.log("Se encontro", coincidencia[0], "en", coincidencia.index);
 }
-// → Found 3 at 14
-//   Found 42 at 33
-//   Found 88 at 40
+// → Se encontro 3 en 14
+//   Se encontro 42 en 33
+//   Se encontro 88 en 38
 ```
 
 {{index "while loop", "= operator"}}
 
-This makes use of the fact that the value of an ((assignment))
-expression (`=`) is the assigned value. So by using `match =
-number.exec(input)` as the condition in the `while` statement, we
-perform the match at the start of each iteration, save its result in a
-((binding)), and stop looping when no more matches are found.
+Esto hace uso del hecho de que el valor de una expresión de ((asignación)) (`=`)
+es el valor asignado. Entonces al usar `coincidencia = numero.exec(entrada)`
+como la condición en la declaración `while`,
+realizamos la coincidencia al inicio de cada iteración, guardamos
+su resultado en una ((vinculación)), y terminamos de repetir cuando no se
+encuentran más coincidencias.
 
 {{id ini}}
-## Parsing an INI file
+## Análisis de un archivo INI
 
 {{index comment, "file format", "enemies example", "INI file"}}
 
-To conclude the chapter, we'll look at a problem that calls for
-((regular expression))s. Imagine we are writing a program to
-automatically collect information about our enemies from the
-((Internet)). (We will not actually write that program here, just the
-part that reads the ((configuration)) file. Sorry.) The configuration
-file looks like this:
+Para concluir el capítulo, veremos un problema que requiere de
+((expresiones regulares)). Imagina que estamos escribiendo un programa para
+recolectar automáticamente información sobre nuestros enemigos de el
+((Internet)). (No escribiremos ese programa aquí, solo la
+parte que lee el archivo de ((configuración)). Lo siento.) El archivo
+de configuración se ve así:
 
 ```{lang: "text/plain"}
-searchengine=https://duckduckgo.com/?q=$1
-spitefulness=9.7
+motordebusqueda=https://duckduckgo.com/?q=$1
+malevolencia=9.7
 
-; comments are preceded by a semicolon...
-; each section concerns an individual enemy
+; los comentarios estan precedidos por un punto y coma...
+; cada seccion contiene un enemigo individual
+
 [larry]
-fullname=Larry Doe
-type=kindergarten bully
-website=http://www.geocities.com/CapeCanaveral/11451
+nombrecompleto=Larry Doe
+tipo=bravucon del preescolar
+sitioweb=http://www.geocities.com/CapeCanaveral/11451
 
 [davaeorn]
-fullname=Davaeorn
-type=evil wizard
-outputdir=/home/marijn/enemies/davaeorn
+nombrecompleto=Davaeorn
+tipo=hechizero malvado
+directoriosalida=/home/marijn/enemies/davaeorn
 ```
 
 {{index grammar}}
 
-The exact rules for this format (which is a widely used format,
-usually called an _INI_ file) are as follows:
+Las reglas exactas para este formato (que es un formato ampliamente utilizado,
+usualmente llamado un archivo _INI_) son las siguientes:
 
-- Blank lines and lines starting with semicolons are ignored.
+- Las líneas en blanco y líneas que comienzan con punto y coma se ignoran.
 
-- Lines wrapped in `[` and `]` start a new ((section)).
+- Las líneas envueltas en `[` y `]` comienzan una nueva ((sección)).
 
-- Lines containing an alphanumeric identifier followed by an `=`
-  character add a setting to the current section.
+- Líneas que contienen un identificador alfanumérico seguido de un
+  carácter `=` agregan una configuración a la sección actual.
 
-- Anything else is invalid.
+- Cualquier otra cosa no es válida.
 
-Our task is to convert a string like this into an object whose
-properties hold strings for sectionless settings and sub-objects for
-sections, with those sub-objects holding the section's settings.
+Nuestra tarea es convertir un string como este en un objeto cuyas
+propiedades contengas strings para configuraciones sin sección y sub-objetos
+para secciones, con esos subobjetos conteniendo la configuración de la sección.
 
 {{index "carriage return", "line break", "newline character"}}
 
-Since the format has to be processed ((line)) by line, splitting up
-the file into separate lines is a good start. We used
-`string.split("\n")` to do this in [Chapter ?](data#split).
-Some operating systems, however, use not just a newline character to
-separate lines but a carriage return character followed by a newline
-(`"\r\n"`). Given that the `split` method also allows a regular
-expression as its argument, we can use a regular expression like
-`/\r?\n/` to split in a way that allows both `"\n"` and `"\r\n"`
-between lines.
+Dado que el formato debe procesarse ((línea)) por línea, dividir
+el archivo en líneas separadas es un buen comienzo. Usamos `string.split("\n")`
+para hacer esto en el [Capítulo 4](datos#split). Algunos sistemas operativos,
+sin embargo, usan no solo un carácter de nueva línea para separar lineas
+sino un carácter de retorno de carro seguido de una nueva línea
+(`"\r\n"`). Dado que el método `split` también permite una expresión
+regular como su argumento, podemos usar una expresión regular como
+`/\r?\n/` para dividir el string de una manera que permita tanto `"\n"` como
+`"\r\n"` entre líneas.
 
 ```{startCode: true}
-function parseINI(string) {
-  // Start with an object to hold the top-level fields
-  let result = {};
-  let section = result;
-  string.split(/\r?\n/).forEach(line => {
-    let match;
-    if (match = line.match(/^(\w+)=(.*)$/)) {
-      section[match[1]] = match[2];
-    } else if (match = line.match(/^\[(.*)\]$/)) {
-      section = result[match[1]] = {};
-    } else if (!/^\s*(;.*)?$/.test(line)) {
-      throw new Error("Line '" + line + "' is not valid.");
+function analizarINI(string) {
+  // Comenzar con un objeto para mantener los campos de nivel superior
+  let resultado = {};
+  let seccion = resultado;
+  string.split(/\r?\n/).forEach(linea => {
+    let coincidencia;
+    if (coincidencia = linea.match(/^(\w+)=(.*)$/)) {
+      seccion[coincidencia[1]] = coincidencia[2];
+    } else if (coincidencia = linea.match(/^\[(.*)\]$/)) {
+      seccion = resultado[coincidencia[1]] = {};
+    } else if (!/^\s*(;.*)?$/.test(linea)) {
+      throw new Error("Linea '" + linea + "' no es valida.");
     }
   });
-  return result;
+  return resultado;
 }
 
-console.log(parseINI(`
-name=Vasilis
-[address]
-city=Tessaloniki`));
-// → {name: "Vasilis", address: {city: "Tessaloniki"}}
+console.log(analizarINI(`
+nombre=Vasilis
+[direccion]
+ciudad=Tessaloniki`));
+// → {nombre: "Vasilis", direccion: {ciudad: "Tessaloniki"}}
 ```
 
 {{index "parseINI function", parsing}}
 
-The code goes over the file's lines and builds up an object.
-Properties at the top are stored directly into that object, whereas
-properties found in sections are stored in a separate section object.
-The `section` binding points at the object for the current section.
+El código pasa por las líneas del archivo y crea un objeto.
+Las propiedades en la parte superior se almacenan directamente en ese objeto,
+mientras que las propiedades que se encuentran en las secciones se almacenan
+en un objeto de sección separado. La vinculación `sección` apunta al
+objeto para la sección actual.
 
-There are two kinds of significant lines—section headers or property
-lines. When a line is a regular property, it is stored in the current
-section. When it is a section header, a new section object is created,
-and `section` is set to point at it.
+Hay dos tipos de de líneas significativas—encabezados de seccion o lineas de
+propiedades. Cuando una línea es una propiedad regular, esta se almacena en la
+sección actual. Cuando se trata de un encabezado de sección, se crea un nuevo
+objeto de sección, y `seccion` se configura para apuntar a él.
 
 {{index "caret character", "dollar sign", boundary}}
 
-Note the recurring use of `^` and `$` to make sure the expression
-matches the whole line, not just part of it. Leaving these out results
-in code that mostly works but behaves strangely for some input, which
-can be a difficult bug to track down.
+Nota el uso recurrente de `^` y `$` para asegurarse de que la expresión
+coincida con toda la línea, no solo con parte de ella. Dejando afuera
+estos resultados en código que funciona principalmente, pero que se comporta
+de forma extraña para algunas entradas, lo que puede ser un error difícil de
+rastrear.
 
 {{index "if keyword", assignment, "= operator"}}
 
-The pattern `if (match = string.match(...))` is similar to the trick
-of using an assignment as the condition for `while`. You often aren't
-sure that your call to `match` will succeed, so you can access the
-resulting object only inside an `if` statement that tests for this. To
-not break the pleasant chain of `else if` forms, we assign the result
-of the match to a binding and immediately use that assignment as the
-test for the `if` statement.
+El patrón `if (coincidencia = string.match (...))` es similar al truco
+de usar una asignación como condición para `while`. A menudo no estas
+seguro de que tu llamada a `match` tendrá éxito, para que puedas acceder al
+objeto resultante solo dentro de una declaración `if` que pruebe esto. Para
+no romper la agradable cadena de las formas `else if`, asignamos el resultado
+de la coincidencia a una vinculación e inmediatamente usamos esa asignación
+como la prueba para la declaración `if`.
 
-If a line is not a section header or a property, the function checks
-whether it is a comment or an empty line using the expression
-`/^\s*(;.*)?$/`. Do you see how it works? The part between the
-((parentheses)) will match comments, and the `?` makes sure it also
-matches lines containing only whitespace. When a line doesn't match
-any of the expected forms, the function throws an exception.
+Si una línea no es un encabezado de sección o una propiedad, la función verifica
+si es un comentario o una línea vacía usando la expresión
+`/^\s*(;.*)?$/`. Ves cómo funciona? La parte entre los ((paréntesis))
+coincidirá con los comentarios, y el `?` asegura que también
+coincida con líneas que contengan solo espacios en blanco. Cuando una línea
+no coincida con cualquiera de las formas esperadas, la función arroja una
+excepción.
 
-## International characters
+## Caracteres internacionales
 
 {{index internationalization, Unicode, ["regular expression", internationalization]}}
 
-Because of JavaScript's initial simplistic implementation and the fact
-that this simplistic approach was later set in stone as ((standard))
-behavior, JavaScript's regular expressions are rather dumb about
-characters that do not appear in the English language. For example, as
-far as JavaScript's regular expressions are concerned, a "((word
-character))" is only one of the 26 characters in the Latin alphabet
-(uppercase or lowercase), decimal digits, and, for some reason, the
-underscore character. Things like _é_ or _β_, which most definitely
-are word characters, will not match `\w` (and _will_ match uppercase
-`\W`, the nonword category).
+Debido a la simplista implementación inicial de JavaScript y al hecho de
+que este enfoque simplista fue luego establecido en piedra como comportamiento
+((estándar)), las expresiones regulares de JavaScript son bastante tontas
+acerca de los caracteres que no aparecen en el idioma inglés. Por ejemplo, en
+cuanto a las expresiones regulares de JavaScript, una "((palabra
+caracter))" es solo uno de los 26 caracteres en el alfabeto latino
+(mayúsculas o minúsculas), dígitos decimales, y, por alguna razón, el
+carácter de guion bajo. Cosas como _é_ o _β_, que definitivamente
+son caracteres de palabras, no coincidirán con `\w` (y _si_
+coincidiran con `\W` mayúscula, la categoría no-palabra).
 
 {{index whitespace}}
 
-By a strange historical accident, `\s` (whitespace) does not have this
-problem and matches all characters that the Unicode standard considers
-whitespace, including things like the ((nonbreaking space)) and the
-((Mongolian vowel separator)).
+Por un extraño accidente histórico, `\s` (espacio en blanco) no tiene este
+problema y coincide con todos los caracteres que el estándar Unicode considera
+espacios en blanco, incluyendo cosas como el (espacio de no separación) y el
+((Separador de vocales Mongol)).
 
-Another problem is that, by default, regular expressions work on code
-units, as discussed in [Chapter ?](higher_order#code_units), not
-actual characters. This means that characters that are composed of two
-code units behave strangely.
+Otro problema es que, de forma predeterminada, las expresiones regulares
+funcionan en unidades del código, como se discute en el
+[Capítulo 5](orden_superior#unidades_del_codigo), no en
+caracteres reales. Esto significa que los caracteres que estan compustos
+de dos unidades de código se comportan de manera extraña.
 
 ```
 console.log(/🍎{3}/.test("🍎🍎🍎"));
@@ -1154,22 +1160,23 @@ console.log(/<.>/u.test("<🌹>"));
 // → true
 ```
 
-The problem is that the 🍎 in the first line is treated as two code
-units, and the `{3}` part is applied only to the second one.
-Similarly, the dot matches a single code unit, not the two that make
-up the rose ((emoji)).
+El problema es que la 🍎 en la primera línea se trata como dos unidades de
+código, y la parte `{3}` se aplica solo a la segunda. Del mismo modo,
+el punto coincide con una sola unidad de código, no con las dos que componen
+al ((emoji)) de rosa.
 
-You must add a `u` option (for ((Unicode))) to your regular
-expression to make it treat such characters properly. The wrong
-behavior remains the default, unfortunately, because changing that
-might cause problems for existing code that depends on it.
+Debe agregar una opción `u` (para ((Unicode))) a tu expresión regular
+para hacerla tratar a tales caracteres apropiadamente. El comportamiento
+incorrecto sigue siendo el predeterminado, desafortunadamente, porque cambiarlo
+podría causar problemas en código ya existente que depende de él.
 
 {{index "character category", [Unicode, property]}}
 
-Though this was only just standardized and is, at the time of writing,
-not widely supported yet, it is possible to use `\p` in a regular
-expression (that must have the Unicode option enabled) to match all
-characters to which the Unicode standard assigns a given property.
+Aunque esto solo se acaba de estandarizar y aun no es, al momento de escribir
+este libro, ampliamente compatible con muchs nabegadores, es posible usar
+`\p` en una expresión regular (que debe tener habilitada la opción Unicode)
+para que coincida con todos los caracteres a los que el estándar Unicode
+lis asigna una propiedad determinada.
 
 ```{test: never}
 console.log(/\p{Script=Greek}/u.test("α"));
@@ -1182,174 +1189,175 @@ console.log(/\p{Alphabetic}/u.test("!"));
 // → false
 ```
 
-Unicode defines a number of useful properties, though finding the one
-that you need may not always be trivial. You can use the
-`\p{Property=Value}` notation to match any character that has the
-given value for that property. If the property name is left off, as in
-`\p{Name}`, the name is assumed to either be a binary property such as
-`Alphabetic` or a category such as `Number`.
+Unicode define una cantidad de propiedades útiles, aunque encontrar la
+que necesitas puede no ser siempre trivial. Puedes usar la notación
+`\p{Property=Value}` para hacer coincidir con cualquier carácter que tenga el
+valor dado para esa propiedad. Si el nombre de la propiedad se deja afuera,
+como en `\p{Name}`, se asume que el nombre es una propiedad binaria como
+`Alfabético` o una categoría como `Número`.
 
 {{id summary_regexp}}
 
-## Summary
+## Resumen
 
-Regular expressions are objects that represent patterns in strings.
-They use their own language to express these patterns.
+Las expresiones regulares son objetos que representan patrones en strings.
+Ellas usan su propio lenguaje para expresar estos patrones.
 
 {{table {cols: [1, 5]}}}
 
-| `/abc/`     | A sequence of characters
-| `/[abc]/`   | Any character from a set of characters
-| `/[^abc]/`  | Any character _not_ in a set of characters
-| `/[0-9]/`   | Any character in a range of characters
-| `/x+/`      | One or more occurrences of the pattern `x`
-| `/x+?/`     | One or more occurrences, nongreedy
-| `/x*/`      | Zero or more occurrences
-| `/x?/`      | Zero or one occurrence
-| `/x{2,4}/`  | Two to four occurrences
-| `/(abc)/`   | A group
-| `/a|b|c/`   | Any one of several patterns
-| `/\d/`      | Any digit character
-| `/\w/`      | An alphanumeric character ("word character")
-| `/\s/`      | Any whitespace character
-| `/./`       | Any character except newlines
-| `/\b/`      | A word boundary
-| `/^/`       | Start of input
-| `/$/`       | End of input
+| `/abc/`     | Una secuencia de caracteres
+| `/[abc]/`   | Cualquier caracter de un conjunto de caracteres
+| `/[^abc]/`  | Cualquier carácter que _no_ este en un conjunto de caracteres
+| `/[0-9]/`   | Cualquier caracter en un rango de caracteres
+| `/x+/`      | Una o más ocurrencias del patrón `x`
+| `/x+?/`     | Una o más ocurrencias, no codiciosas
+| `/x*/`      | Cero o más ocurrencias
+| `/x?/`      | Cero o una ocurrencia
+| `/x{2,4}/`  | De dos a cuatro ocurrencias
+| `/(abc)/`   | Un grupo
+| `/a|b|c/`   | Cualquiera de varios patrones
+| `/\d/`      | Cualquier caracter de digito
+| `/\w/`      | Un caracter alfanumérico ("carácter de palabra")
+| `/\s/`      | Cualquier caracter de espacio en blanco
+| `/./`       | Cualquier caracter excepto líneas nuevas
+| `/\b/`      | Un límite de palabra
+| `/^/`       | Inicio de entrada
+| `/$/`       | Fin de la entrada
 
-A regular expression has a method `test` to test whether a given
-string matches it. It also has a method `exec` that, when a match is
-found, returns an array containing all matched groups. Such an array
-has an `index` property that indicates where the match started.
+Una expresión regular tiene un método `test` para probar si una determinada
+string coincide cn ella. También tiene un método `exec` que, cuando una
+coincidencia es encontrada, retorna un array que contiene todos los grupos
+que coincidieron. Tal array tiene una propiedad `index` que indica en
+dónde comenzó la coincidencia.
 
-Strings have a `match` method to match them against a regular
-expression and a `search` method to search for one, returning only the
-starting position of the match. Their `replace` method can replace
-matches of a pattern with a replacement string or function.
+Los strings tienen un método `match` para coincidirlas con una expresión
+regular y un método `search` para buscar por una, retornando solo la
+posición inicial de la coincidencia. Su método `replace` puede reemplazar
+coincidencias de un patrón con un string o función de reemplazo.
 
-Regular expressions can have options, which are written after the
-closing slash. The `i` option makes the match case-insensitive. The
-`g` option makes the expression _global_, which, among other things,
-causes the `replace` method to replace all instances instead of just
-the first. The `y` option makes it sticky, which means that it will
-not search ahead and skip part of the string when looking for a match.
-The `u` option turns on Unicode mode, which fixes a number of problems
-around the handling of characters that take up two code units.
+Las expresiones regulares pueden tener opciones, que se escriben después de la
+barra que cierra la expresión. La opción `i` hace que la coincidencia no
+distinga entre mayúsculas y minúsculas. La opción `g` hace que la expresión sea
+_global_, que, entre otras cosas, hace que el método `replace` reemplace todas
+las instancias en lugar de solo la primera. La opción `y` la hace adhesivo,
+lo que significa que hará que no busque con anticipación y omita la parte del
+string cuando busque una coincidencia. La opción `u` activa el modo Unicode,
+lo que soluciona varios problemas alrededor del manejo de caracteres que
+toman dos unidades de código.
 
-Regular expressions are a sharp ((tool)) with an awkward handle. They
-simplify some tasks tremendously but can quickly become unmanageable
-when applied to complex problems. Part of knowing how to use them is
-resisting the urge to try to shoehorn things that they cannot cleanly
-express into them.
+Las expresiones regulares son ((herramientas)) afiladas con un manejo incómodo.
+Ellas simplifican algunas tareas enormemente, pero pueden volverse inmanejables
+rápidamente cuando se aplican a problemas complejos. Parte de saber cómo
+usarlas es resistiendo el impulso de tratar de calzar cosas que no pueden ser
+expresadas limpiamente en ellas.
 
-## Exercises
+## Ejercicios
 
 {{index debugging, bug}}
 
-It is almost unavoidable that, in the course of working on these
-exercises, you will get confused and frustrated by some regular
-expression's inexplicable ((behavior)). Sometimes it helps to enter
-your expression into an online tool like
-[_debuggex.com_](https://www.debuggex.com/) to see whether its
-visualization corresponds to what you intended and to ((experiment))
-with the way it responds to various input strings.
+Es casi inevitable que, durante el curso de trabajar en estos
+ejercicios, te sentiras confundido y frustrado por el ((comportamiento))
+inexplicable de alguna regular expresión. A veces ayuda ingresar
+tu expresión en una herramienta en línea como
+[_debuggex.com_](https://www.debuggex.com/) para ver si
+su visualización corresponde a lo que pretendías y a ((experimentar))
+con la forma en que responde a varios strings de entrada.
 
-### Regexp golf
+### Golf Regexp
 
 {{index "program size", "code golf", "regexp golf (exercise)"}}
 
-_Code golf_ is a term used for the game of trying to express a
-particular program in as few characters as possible. Similarly,
-_regexp golf_ is the practice of writing as tiny a regular expression
-as possible to match a given pattern, and _only_ that pattern.
+_Golf de Codigo_ es un término usado para el juego de intentar expresar un
+programa particular con el menor número de caracteres posible. Similarmente,
+_Golf de Regexp_ es la práctica de escribir una expresión regular tan pequeña
+como sea posible para que coincida con un patrón dado, y _sólo_ con ese patrón.
 
 {{index boundary, matching}}
 
-For each of the following items, write a ((regular expression)) to
-test whether any of the given substrings occur in a string. The
-regular expression should match only strings containing one of the
-substrings described. Do not worry about word boundaries unless
-explicitly mentioned. When your expression works, see whether you can
-make it any smaller.
+Para cada uno de los siguientes elementos, escribe una ((expresión regular)) para
+probar si alguna de las substrings dadas ocurre en un string. La
+expresión regular debe coincidir solo con strings que contengan una de las
+substrings descritas. No te preocupes por los límites de palabras a menos que
+sean explícitamente mencionados. Cuando tu expresión funcione, ve si puedes
+hacerla más pequeña.
 
- 1. _car_ and _cat_
- 2. _pop_ and _prop_
- 3. _ferret_, _ferry_, and _ferrari_
- 4. Any word ending in _ious_
- 5. A whitespace character followed by a period, comma, colon, or semicolon
- 6. A word longer than six letters
- 7. A word without the letter _e_ (or _E_)
+ 1. _car_ y _cat_
+ 2. _pop_ y _prop_
+ 3. _ferret_, _ferry_, y _ferrari_
+ 4. Cualquier palabra que termine _ious_
+ 5. Un carácter de espacio en blanco seguido de un punto, coma, dos puntos o punto y coma
+ 6. Una palabra con mas de seis letras
+ 7. Una palabra sin la letra _e_ (o _E_)
 
-Refer to the table in the [chapter summary](regexp#summary_regexp) for
-help. Test each solution with a few test strings.
+Consulta la tabla en el [resumen del capítulo](regexp#summary_regexp) para
+ayudarte. Pruebe cada solución con algunos strings de prueba.
 
 {{if interactive
 ```
-// Fill in the regular expressions
+// Llena con las expresiones regulares
 
-verify(/.../,
+verificar(/.../,
        ["my car", "bad cats"],
        ["camper", "high art"]);
 
-verify(/.../,
+verificar(/.../,
        ["pop culture", "mad props"],
        ["plop", "prrrop"]);
 
-verify(/.../,
+verificar(/.../,
        ["ferret", "ferry", "ferrari"],
        ["ferrum", "transfer A"]);
 
-verify(/.../,
+verificar(/.../,
        ["how delicious", "spacious room"],
        ["ruinous", "consciousness"]);
 
-verify(/.../,
+verificar(/.../,
        ["bad punctuation ."],
        ["escape the period"]);
 
-verify(/.../,
+verificar(/.../,
        ["hottentottententen"],
        ["no", "hotten totten tenten"]);
 
-verify(/.../,
+verificar(/.../,
        ["red platypus", "wobbling nest"],
        ["earth bed", "learning ape", "BEET"]);
 
 
-function verify(regexp, yes, no) {
-  // Ignore unfinished exercises
+function verificar(regexp, si, no) {
+  // Ignora ejercicios sin terminar
   if (regexp.source == "...") return;
-  for (let str of yes) if (!regexp.test(str)) {
-    console.log(`Failure to match '${str}'`);
+  for (let str of si) if (!regexp.test(str)) {
+    console.log(`Fallo al coincidir '${str}'`);
   }
   for (let str of no) if (regexp.test(str)) {
-    console.log(`Unexpected match for '${str}'`);
+    console.log(`Coincidencia inesperada para '${str}'`);
   }
 }
 ```
 
 if}}
 
-### Quoting style
+### Estilo entre comillas
 
 {{index "quoting style (exercise)", "single-quote character", "double-quote character"}}
 
-Imagine you have written a story and used single ((quotation mark))s
-throughout to mark pieces of dialogue. Now you want to replace all the
-dialogue quotes with double quotes, while keeping the single quotes
-used in contractions like _aren't_.
+Imagina que has escrito una historia y has utilizado ((comillas))s simples
+en todas partes para marcar piezas de diálogo. Ahora quieres reemplazar todas
+las comillas de diálogo con comillas dobles, pero manteniendo las comillas
+simples usadas en contracciones como _aren't_.
 
 {{index "replace method"}}
 
-Think of a pattern that distinguishes these two
-kinds of quote usage and craft a call to the `replace` method that
-does the proper replacement.
+Piensa en un patrón que distinga de estos dos tipos de uso de citas y crea
+una llamada al método `replace` que haga el reemplazo apropiado.
 
 {{if interactive
 ```{test: no}
-let text = "'I'm the cook,' he said, 'it's my job.'";
-// Change this call.
-console.log(text.replace(/A/g, "B"));
+let texto = "'I'm the cook,' he said, 'it's my job.'";
+// Cambia esta llamada
+console.log(texto.replace(/A/g, "B"));
 // → "I'm the cook," he said, "it's my job."
 ```
 if}}
@@ -1358,48 +1366,48 @@ if}}
 
 {{index "quoting style (exercise)", boundary}}
 
-The most obvious solution is to only replace quotes with a nonword
-character on at least one side. Something like `/\W'|'\W/`. But you
-also have to take the start and end of the line into account.
+La solución más obvia es solo reemplazar las citas con una palabra no
+personaje en al menos un lado. Algo como `/\W'|'\W/`. Pero
+también debes tener en cuenta el inicio y el final de la línea.
 
 {{index grouping, "replace method"}}
 
-In addition, you must ensure that the replacement also includes the
-characters that were matched by the `\W` pattern so that those are not
-dropped. This can be done by wrapping them in ((parentheses)) and
-including their groups in the replacement string (`$1`, `$2`). Groups
-that are not matched will be replaced by nothing.
+Además, debes asegurarte de que el reemplazo también incluya los
+caracteres que coincidieron con el patrón `\W` para que estos no sean
+dejados. Esto se puede hacer envolviéndolos en ((paréntesis)) e
+incluyendo sus grupos en la cadena de reemplazo (`$1`,`$2`). Los grupos
+que no están emparejados serán reemplazados por nada.
 
 hint}}
 
-### Numbers again
+### Números otra vez
 
 {{index sign, "fractional number", syntax, minus, "plus character", exponent, "scientific notation", "period character"}}
 
-Write an expression that matches only JavaScript-style ((number))s. It
-must support an optional minus _or_ plus sign in front of the number,
-the decimal dot, and exponent notation—`5e-3` or `1E10`— again with an
-optional sign in front of the exponent. Also note that it is not
-necessary for there to be digits in front of or after the dot, but the
-number cannot be a dot alone. That is, `.5` and `5.` are valid
-JavaScript numbers, but a lone dot _isn't_.
+Escribe una expresión que coincida solo con el estilo de ((número))s en
+JavaScript. Esta debe admitir un signo opcional menos _o_ más delante del número,
+el punto decimal, y la notación de exponente—`5e-3` o `1E10`— nuevamente con un
+signo opcional en frente del exponente. También ten en cuenta que no es
+necesario que hayan dígitos delante o detrás del punto, pero el
+el número no puede ser solo un punto. Es decir, `.5` y `5.` son numeros válidos
+de JavaScript, pero solo un punto _no_ lo es.
 
 {{if interactive
 ```{test: no}
-// Fill in this regular expression.
-let number = /^...$/;
+// Completa esta expresión regular.
+let numero = /^...$/;
 
-// Tests:
+// Pruebas:
 for (let str of ["1", "-1", "+15", "1.55", ".5", "5.",
                  "1.3e2", "1E-4", "1e+12"]) {
-  if (!number.test(str)) {
-    console.log(`Failed to match '${str}'`);
+  if (!numero.test(str)) {
+    console.log(`Fallo al coincidir '${str}'`);
   }
 }
 for (let str of ["1a", "+-1", "1.2.3", "1+1", "1e4.5",
                  ".5.", "1f5", "."]) {
-  if (number.test(str)) {
-    console.log(`Incorrectly accepted '${str}'`);
+  if (numero.test(str)) {
+    console.log(`Incorrectamente acepto '${str}'`);
   }
 }
 ```
@@ -1410,23 +1418,23 @@ if}}
 
 {{index ["regular expression", escaping], "backslash character"}}
 
-First, do not forget the backslash in front of the period.
+Primero, no te olvides de la barra invertida delante del punto.
 
-Matching the optional ((sign)) in front of the ((number)), as well as
-in front of the ((exponent)), can be done with `[+\-]?` or `(\+|-|)`
-(plus, minus, or nothing).
+Coincidir el ((signo)) opcional delante de el ((número)), así como
+delante del ((exponente)), se puede hacer con `[+\-]?` o `(\+|-|)`
+(más, menos o nada).
 
 {{index "pipe character"}}
 
-The more complicated part of the exercise is the problem of matching
-both `"5."` and `".5"` without also matching `"."`. For this, a good
-solution is to use the `|` operator to separate the two cases—either
-one or more digits optionally followed by a dot and zero or more
-digits _or_ a dot followed by one or more digits.
+La parte más complicada del ejercicio es el problema hacer coincidir
+ambos `"5."` y `".5"` sin tambien coincidir coincidir con `"."`. Para esto,
+una buena solución es usar el operador `|` para separar los dos casos—ya sea
+uno o más dígitos seguidos opcionalmente por un punto y cero o más
+dígitos _o_ un punto seguido de uno o más dígitos.
 
 {{index exponent, "case sensitivity", ["regular expression", flags]}}
 
-Finally, to make the _e_ case-insensitive, either add an `i` option to
-the regular expression or use `[eE]`.
+Finalmente, para hacer que la _e_ pueda ser mayuscula o minuscula,
+agrega una opción `i` a la expresión regular o usa `[eE]`.
 
 hint}}
