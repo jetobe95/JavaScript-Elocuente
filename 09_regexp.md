@@ -454,206 +454,205 @@ console.log(obtenerFecha("30-1-2003"));
 La vinculación `_` (guion bajo) es ignorada, y solo se usa para omitir el
 elemento de coincidencia completa en el array retornado por `exec`.
 
-## Word and string boundaries
+## Palabra y límites de string
 
 {{index matching, ["regular expression", boundary]}}
 
-Unfortunately, `getDate` will also happily extract the nonsensical
-date 00-1-3000 from the string `"100-1-30000"`. A match may happen
-anywhere in the string, so in this case, it'll just start at the
-second character and end at the second-to-last character.
+Desafortunadamente, `obtenerFecha` felizmente también extraerá la absurda
+fecha 00-1-3000 del string `"100-1-30000"`. Una coincidencia puede suceder
+en cualquier lugar del string, por lo que en este caso, esta simplemente
+comenzará en el segundo carácter y terminara en el penúltimo carácter.
 
 {{index boundary, "caret character", "dollar sign"}}
 
-If we want to enforce that the match must span the whole string, we
-can add the markers `^` and `$`. The caret matches the start of the
-input string, whereas the dollar sign matches the end. So, `/^\d+$/`
-matches a string consisting entirely of one or more digits, `/^!/`
-matches any string that starts with an exclamation mark, and `/x^/`
-does not match any string (there cannot be an _x_ before the start of
-the string).
+Si queremos hacer cumplir que la coincidencia deba abarcar el string completamente,
+puedes agregar los marcadores `^` y `$`. El signo de intercalación ("^")
+coincide con el inicio del string de entrada, mientras que el signo de dólar
+coincide con el final.  Entonces, `/^\d+$/` coincide con un string compuesto
+por uno o más dígitos, `/^!/` coincide con cualquier string que comience con
+un signo de exclamación, y `/x^/` no coincide con ningun string
+(no puede haber una _x_ antes del inicio del string).
 
 {{index "word boundary", "word character"}}
 
-If, on the other hand, we just want to make sure the date starts and
-ends on a word boundary, we can use the marker `\b`. A word boundary
-can be the start or end of the string or any point in the string that
-has a word character (as in `\w`) on one side and a nonword character
-on the other.
+Si, por el otro lado, solo queremos asegurarnos de que la fecha comience y
+termina en un límite de palabras, podemos usar el marcador `\b`. Un límite de
+palabra puede ser el inicio o el final del string o cualquier punto en el
+string que tenga un carácter de palabra (como en `\w`) en un lado y un
+carácter de no-palabra en el otro.
 
 ```
-console.log(/cat/.test("concatenate"));
+console.log(/cat/.test("concatenar"));
 // → true
-console.log(/\bcat\b/.test("concatenate"));
+console.log(/\bcat\b/.test("concatenar"));
 // → false
 ```
 
 {{index matching}}
 
-Note that a boundary marker doesn't match an actual character. It just
-enforces that the regular expression matches only when a certain
-condition holds at the place where it appears in the pattern.
+Ten en cuenta que un marcador de límite no coincide con un carácter real. Solo
+hace cumplir que la expresión regular coincida solo cuando una cierta
+condición se mantenga en el lugar donde aparece en el patrón.
 
-## Choice patterns
+## Patrones de elección
 
 {{index branching, ["regular expression", alternatives], "farm example"}}
 
-Say we want to know whether a piece of text contains not only a number
-but a number followed by one of the words _pig_, _cow_, or _chicken_,
-or any of their plural forms.
+Digamos que queremos saber si una parte del texto contiene no solo un número
+pero un número seguido de una de las palabras _cerdo_, _vaca_, o _pollo_,
+o cualquiera de sus formas plurales.
 
-We could write three regular expressions and test them in turn, but
-there is a nicer way. The ((pipe character)) (`|`) denotes a
-((choice)) between the pattern to its left and the pattern to its
-right. So I can say this:
+Podríamos escribir tres expresiones regulares y probarlas a su vez, pero
+hay una manera más agradable. El ((carácter de tubería)) (`|`) denota una
+((elección)) entre el patrón a su izquierda y el patrón a su
+derecha. Entonces puedo decir esto:
 
 ```
-let animalCount = /\b\d+ (pig|cow|chicken)s?\b/;
-console.log(animalCount.test("15 pigs"));
+let conteoAnimales = /\b\d+ (cerdo|vaca|pollo)s?\b/;
+console.log(conteoAnimales.test("15 cerdo"));
 // → true
-console.log(animalCount.test("15 pigchickens"));
+console.log(conteoAnimales.test("15 cerdopollos"));
 // → false
 ```
 
 {{index parentheses}}
 
-Parentheses can be used to limit the part of the pattern that the pipe
-operator applies to, and you can put multiple such operators next to
-each other to express a choice between more than two alternatives.
+Los paréntesis se pueden usar para limitar la parte del patrón a la que aplica
+el operador de tuberia, y puedes poner varios de estos operadores unos a los
+lados de los otros para expresar una elección entre más de dos alternativas.
 
-## The mechanics of matching
+## Las mecánicas del emparejamiento
 
 {{index ["regular expression", matching], [matching, algorithm], searching}}
 
-Conceptually, when you use `exec` or `test` the regular expression
-engine looks for a match in your string by trying to match the
-expression first from the start of the string, then from the second
-character, and so on until it finds a match or reaches the end of the
-string. It'll either return the first match that can be found or fail
-to find any match at all.
+Conceptualmente, cuando usas `exec` o `test` el motor de la expresión regular
+busca una coincidencia en tu string al tratar de hacer coincidir la
+expresión primero desde el comienzo del string, luego desde el segundo
+caracter, y así sucesivamente hasta que encuentra una coincidencia o llega al
+final del string. Retornara la primera coincidencia que se puede encontrar o
+fallara en encontrar cualquier coincidencia.
 
 {{index ["regular expression", matching], [matching, algorithm]}}
 
-To do the actual matching, the engine treats a regular expression
-something like a ((flow diagram)). This is the diagram for the
-livestock expression in the previous example:
+Para realmente hacer la coincidencia, el motor trata una expresión regular
+algo así como un ((diagrama de flujo)). Este es el diagrama para la
+expresión de ganado en el ejemplo anterior:
 
 {{figure {url: "img/re_pigchickens.svg", alt: "Visualization of /\\b\\d+ (pig|cow|chicken)s?\\b/"}}}
 
 {{index traversal}}
 
-Our expression matches if we can find a path from the left side of the
-diagram to the right side. We keep a current position in the string,
-and every time we move through a box, we verify that the part of the
-string after our current position matches that box.
+Nuestra expresión coincide si podemos encontrar un camino desde el lado
+izquierdo del diagrama al lado derecho. Mantenemos una posición actual en el
+string, y cada vez que nos movemos a través de una caja, verificaremos que la
+parte del string después de nuestra posición actual coincida con esa
+caja.
 
-So if we try to match `"the 3 pigs"` from position 4, our progress
-through the flow chart would look like this:
+Entonces, si tratamos de coincidir `"los 3 cerdos"` desde la posición 4,
+nuestro progreso a través del diagrama de flujo se vería así:
 
- - At position 4, there is a word ((boundary)), so we can move past
-   the first box.
+- En la posición 4, hay un ((límite)) de palabra, por lo que podemos pasar
+  la primera caja.
 
- - Still at position 4, we find a digit, so we can also move past the
-   second box.
+- Aún en la posición 4, encontramos un dígito, por lo que también podemos pasar
+  la segunda caja.
 
- - At position 5, one path loops back to before the second (digit)
-   box, while the other moves forward through the box that holds a
-   single space character. There is a space here, not a digit, so we
-   must take the second path.
+- En la posición 5, una ruta regresa a antes de la segunda caja (dígito),
+  mientras que la otro se mueve hacia adelante a través de la caja que contiene
+  un caracter de espacio simple. Hay un espacio aquí, no un dígito, asi que
+  debemos tomar el segundo camino.
 
- - We are now at position 6 (the start of "pigs") and at the three-way
-   branch in the diagram. We don't see "cow" or "chicken" here, but we
-   do see "pig", so we take that branch.
+- Ahora estamos en la posición 6 (el comienzo de "cerdos") y en el camino de
+  tres vías en el diagrama. No vemos "vaca" o "pollo" aquí, pero
+  vemos "cerdo", entonces tomamos esa rama.
 
- - At position 9, after the three-way branch, one path skips the _s_
-   box and goes straight to the final word boundary, while the other
-   path matches an _s_. There is an _s_ character here, not a word
-   boundary, so we go through the _s_ box.
+- En la posición 9, después de la rama de tres vías, un camino se salta la
+  caja _s_ y va directamente al límite de la palabra final, mientras que la
+  otra ruta coincide con una _s_. Aquí hay un carácter _s_, no una palabra
+  límite, por lo que pasamos por la caja _s_.
 
- - We're at position 10 (the end of the string) and can match only a
-   word ((boundary)). The end of a string counts as a word boundary,
-   so we go through the last box and have successfully matched this
-   string.
+- Estamos en la posición 10 (al final del string) y solo podemos hacer coincidir
+  una palabra ((límite)). El final de un string cuenta como un límite de palabra,
+  así que pasamos por la última caja y hemos emparejado con éxito este string.
 
 {{id backtracking}}
 
-## Backtracking
+## Retrocediendo
 
 {{index ["regular expression", backtracking], "binary number", "decimal number", "hexadecimal number", "flow diagram", [matching, algorithm], backtracking}}
 
-The regular expression `/\b([01]+b|[\da-f]+h|\d+)\b/` matches either a
-binary number followed by a _b_, a hexadecimal number (that is, base
-16, with the letters _a_ to _f_ standing for the digits 10 to 15)
-followed by an _h_, or a regular decimal number with no suffix
-character. This is the corresponding diagram:
+La expresión regular `/\b([01]+b|[\da-f]+h|\d+)\b/` coincide con un
+número binario seguido de una _b_, un número hexadecimal (es decir, en base
+16, con las letras _a_ a _f_ representando los dígitos 10 a 15)
+seguido de una _h_, o un número decimal regular sin caracter de sufijo.
+Este es el diagrama correspondiente:
 
 {{figure {url: "img/re_number.svg", alt: "Visualization of /\\b([01]+b|\\d+|[\\da-f]+h)\\b/"}}}
 
 {{index branching}}
 
-When matching this expression, it will often happen that the top
-(binary) branch is entered even though the input does not actually
-contain a binary number. When matching the string `"103"`, for
-example, it becomes clear only at the 3 that we are in the wrong
-branch. The string _does_ match the expression, just not the branch we
-are currently in.
+Al hacer coincidir esta expresión, a menudo sucederá que la rama superior
+(binaria) sea ingresada aunque la entrada en realidad no contenga un número
+binario. Al hacer coincidir el string `"103"`, por ejemplo, queda claro solo en
+el 3 que estamos en la rama equivocada. El string _si_ coincide con la
+expresión, pero no con la rama en la que nos encontramos actualmente.
 
 {{index backtracking, searching}}
 
-So the matcher _backtracks_. When entering a branch, it remembers its
-current position (in this case, at the start of the string, just past
-the first boundary box in the diagram) so that it can go back and try
-another branch if the current one does not work out. For the string
-`"103"`, after encountering the 3 character, it will start trying the
-branch for hexadecimal numbers, which fails again because there is no
-_h_ after the number. So it tries the decimal number branch. This one
-fits, and a match is reported after all.
+Entonces el "emparejador" _retrocede_. Al ingresar a una rama, este recuerda su
+posición actual (en este caso, al comienzo del string, justo después
+del primer cuadro de límite en el diagrama) para que pueda retroceder e intentar
+otra rama si la actual no funciona. Para el string `"103"`, después de
+encontrar los 3 caracteres, comenzará a probar la
+rama para números hexadecimales, que falla nuevamente porque no hay
+_h_ después del número. Por lo tanto, intenta con la rama de número decimal.
+Esta encaja, y se informa de una coincidencia después de todo.
 
 {{index [matching, algorithm]}}
 
-The matcher stops as soon as it finds a full match. This means that if
-multiple branches could potentially match a string, only the first one
-(ordered by where the branches appear in the regular expression) is
-used.
+El emparejador se detiene tan pronto como encuentra una coincidencia completa.
+Esto significa que si múltiples ramas podrían coincidir con un string, solo
+la primera (ordenado por donde las ramas aparecen en la expresión regular) es
+usada.
 
-Backtracking also happens for ((repetition)) operators like + and `*`.
-If you match `/^.*x/` against `"abcxe"`, the `.*` part will first try
-to consume the whole string. The engine will then realize that it
-needs an _x_ to match the pattern. Since there is no _x_ past the end
-of the string, the star operator tries to match one character less.
-But the matcher doesn't find an _x_ after `abcx` either, so it
-backtracks again, matching the star operator to just `abc`. _Now_ it
-finds an _x_ where it needs it and reports a successful match from
-positions 0 to 4.
+El retroceso también ocurre para ((repetición)) de operadores como + y `*`.
+Si hace coincidir `/^.*x/` contra `"abcxe"`, la parte `.*` intentará primero
+consumir todo el string. El motor entonces se dará cuenta de que
+necesita una _x_ para que coincida con el patrón. Como no hay _x_ al pasar
+el final del string, el operador de estrella intenta hacer coincidir un
+caracter menos. Pero el emparejador tampoco encuentra una _x_ después de `abcx`,
+por lo que retrocede nuevamente, haciendo coincidir el operador de estrella con
+`abc`. _Ahora_ encuentra una _x_ donde lo necesita e informa de una
+coincidencia exitosa de las posiciones 0 a 4.
 
 {{index performance, complexity}}
 
-It is possible to write regular expressions that will do a _lot_ of
-backtracking. This problem occurs when a pattern can match a piece of
-input in many different ways. For example, if we get confused while
-writing a binary-number regular expression, we might accidentally
-write something like `/([01]+)+b/`.
+Es posible escribir expresiones regulares que harán un _monton_ de
+retrocesos. Este problema ocurre cuando un patrón puede coincidir con una
+pieza de entrada en muchas maneras diferentes. Por ejemplo, si nos
+confundimos mientras escribimos una expresión regular de números binarios,
+podríamos accidentalmente escribir algo como `/([01]+)+b/`.
 
 {{figure {url: "img/re_slow.svg", alt: "Visualization of /([01]+)+b/",width: "6cm"}}}
 
 {{index "inner loop", [nesting, "in regexps"]}}
 
-If that tries to match some long series of zeros and ones with no
-trailing _b_ character, the matcher first goes through the inner
-loop until it runs out of digits. Then it notices there is no _b_, so
-it backtracks one position, goes through the outer loop once, and
-gives up again, trying to backtrack out of the inner loop once more.
-It will continue to try every possible route through these two loops.
-This means the amount of work _doubles_ with each additional
-character. For even just a few dozen characters, the resulting match
-will take practically forever.
+Si intentas hacer coincidir eso con algunas largas series de ceros y unos sin
+un caracter _b_ al final, el emparejador primero pasara por el ciclo interior
+hasta que se quede sin dígitos. Entonces nota que no hay _b_, asi que
+retrocede una posición, atraviesa el ciclo externo una vez, y
+se da por vencido otra vez, tratando de retroceder fuera del ciclo interno una
+vez más. Continuará probando todas las rutas posibles a través de estos dos
+bucles. Esto significa que la cantidad de trabajo se _duplica_ con cada
+caracter. Incluso para unas pocas docenas de caracters, la coincidencia
+resultante tomará prácticamente para siempre.
 
-## The replace method
+## El método replace
 
 {{index "replace method", "regular expression"}}
 
-String values have a `replace` method that can be used to replace
-part of the string with another string.
+Los valores de string tienen un método `replace` ("reemplazar") que se puede
+usar para reemplazar parte del string con otro string.
 
 ```
 console.log("papa".replace("p", "m"));
@@ -662,10 +661,10 @@ console.log("papa".replace("p", "m"));
 
 {{index ["regular expression", flags], ["regular expression", global]}}
 
-The first argument can also be a regular expression, in which case the
-first match of the regular expression is replaced. When a `g` option
-(for _global_) is added to the regular expression, _all_ matches in
-the string will be replaced, not just the first.
+El primer argumento también puede ser una expresión regular, en cuyo caso ña
+primera coincidencia de la expresión regular es reemplazada. Cuando una opción
+`g` (para _global_) se agrega a la expresión regular, _todas_ las coincidencias
+en el string será reemplazadas, no solo la primera.
 
 ```
 console.log("Borobudur".replace(/[ou]/, "a"));
@@ -676,20 +675,20 @@ console.log("Borobudur".replace(/[ou]/g, "a"));
 
 {{index [interface, design], argument}}
 
-It would have been sensible if the choice between replacing one match
-or all matches was made through an additional argument to `replace` or
-by providing a different method, `replaceAll`. But for some
-unfortunate reason, the choice relies on a property of the regular
-expression instead.
+Hubiera sido sensato si la elección entre reemplazar una coincidencia
+o todas las coincidencias se hiciera a través de un argumento adicional en
+`replace` o proporcionando un método diferente, `replaceAll` ("reemplazarTodas").
+Pero por alguna desafortunada razón, la elección se basa en una propiedad de
+los expresiones regulares en su lugar.
 
 {{index grouping, "capture group", "dollar sign", "replace method", ["regular expression", grouping]}}
 
-The real power of using regular expressions with `replace` comes from
-the fact that we can refer back to matched groups in the replacement
-string. For example, say we have a big string containing the names of
-people, one name per line, in the format `Lastname, Firstname`. If we
-want to swap these names and remove the comma to get a `Firstname
-Lastname` format, we can use the following code:
+El verdadero poder de usar expresiones regulares con `replace` viene del
+hecho de que podemos referirnos a grupos coincidentes en la string de reemplazo.
+Por ejemplo, supongamos que tenemos una gran string que contenga los nombres de
+personas, un nombre por línea, en el formato `Apellido, Nombre`. Si
+deseamos intercambiar estos nombres y eliminar la coma para obtener un
+formato `Nombre Apellido`, podemos usar el siguiente código:
 
 ```
 console.log(
@@ -700,120 +699,120 @@ console.log(
 //   Philip Wadler
 ```
 
-The `$1` and `$2` in the replacement string refer to the parenthesized
-groups in the pattern. `$1` is replaced by the text that matched
-against the first group, `$2` by the second, and so on, up to `$9`.
-The whole match can be referred to with `$&`.
+Los `$1` y `$2` en el string de reemplazo se refieren a los grupos entre
+paréntesis del patrón. `$1` se reemplaza por el texto que coincide
+con el primer grupo, `$2` por el segundo, y así sucesivamente, hasta `$9`.
+Puedes hacer referencia a la coincidencia completa con `$&`.
 
 {{index [function, "higher-order"], grouping, "capture group"}}
 
-It is possible to pass a function—rather than a string—as the second
-argument to `replace`. For each replacement, the function will be
-called with the matched groups (as well as the whole match) as
-arguments, and its return value will be inserted into the new string.
+Es posible pasar una función, en lugar de un string, como segundo
+argumento para `replace`. Para cada reemplazo, la función será
+llamada con los grupos coincidentes (así como con la coincidencia completa)
+como argumentos, y su valor de retorno se insertará en el nuevo string.
 
-Here's a small example:
+Aquí hay un pequeño ejemplo:
 
 ```
-let s = "the cia and fbi";
+let s = "la cia y el fbi";
 console.log(s.replace(/\b(fbi|cia)\b/g,
             str => str.toUpperCase()));
-// → the CIA and FBI
+// → la CIA y el FBI
 ```
 
-And here's a more interesting one:
+Y aquí hay uno más interesante:
 
 ```
-let stock = "1 lemon, 2 cabbages, and 101 eggs";
-function minusOne(match, amount, unit) {
-  amount = Number(amount) - 1;
-  if (amount == 1) { // only one left, remove the 's'
-    unit = unit.slice(0, unit.length - 1);
-  } else if (amount == 0) {
-    amount = "no";
+let almacen = "1 limon, 2 lechugas, y 101 huevos";
+function menosUno(coincidencia, cantidad, unidad) {
+  cantidad = Number(cantidad) - 1;
+  if (cantidad == 1) { // solo queda uno, remover la 's'
+    unidad = unidad.slice(0, unidad.length - 1);
+  } else if (cantidad == 0) {
+    cantidad = "sin";
   }
-  return amount + " " + unit;
+  return cantidad + " " + unidad;
 }
-console.log(stock.replace(/(\d+) (\w+)/g, minusOne));
-// → no lemon, 1 cabbage, and 100 eggs
+console.log(almacen.replace(/(\d+) (\w+)/g, menosUno));
+// → sin limon, 1 lechuga, y 100 huevos
 ```
 
-This takes a string, finds all occurrences of a number followed by an
-alphanumeric word, and returns a string wherein every such occurrence
-is decremented by one.
+Esta función toma un string, encuentra todas las ocurrencias de un número
+seguido de una palabra alfanumérica, y retorna un string en la que cada
+ocurrencia es decrementada por uno.
 
-The `(\d+)` group ends up as the `amount` argument to the function,
-and the `(\w+)` group gets bound to `unit`. The function converts
-`amount` to a number—which always works, since it matched `\d+`—and
-makes some adjustments in case there is only one or zero left.
+El grupo `(\d+)` termina como el argumento `cantidad` para la función,
+y el grupo `(\w+)` se vincula a `unidad`. La función convierte
+`cantidad` a un número—lo que siempre funciona, ya que coincidio con `\d+`—y
+realiza algunos ajustes en caso de que solo quede uno o cero.
 
-## Greed
+## Codicia
 
 {{index greed, "regular expression"}}
 
-It is possible to use `replace` to write a function that removes all
-((comment))s from a piece of JavaScript ((code)). Here is a first
-attempt:
+Es posible usar `replace` para escribir una función que elimine todo los
+((comentario))s de un fragmento de ((código)) JavaScript. Aquí hay un primer
+intento:
 
 ```{test: wrap}
-function stripComments(code) {
-  return code.replace(/\/\/.*|\/\*[^]*\*\//g, "");
+function removerComentarios(codigo) {
+  return codigo.replace(/\/\/.*|\/\*[^]*\*\//g, "");
 }
-console.log(stripComments("1 + /* 2 */3"));
+console.log(removerComentarios("1 + /* 2 */3"));
 // → 1 + 3
-console.log(stripComments("x = 10;// ten!"));
+console.log(removerComentarios("x = 10;// ten!"));
 // → x = 10;
-console.log(stripComments("1 /* a */+/* b */ 1"));
+console.log(removerComentarios("1 /* a */+/* b */ 1"));
 // → 1  1
 ```
 
 {{index "period character", "slash character", "newline character", "empty set", "block comment", "line comment"}}
 
-The part before the _or_ operator matches two slash characters
-followed by any number of non-newline characters. The part for
-multiline comments is more involved. We use `[^]` (any character that
-is not in the empty set of characters) as a way to match any
-character. We cannot just use a period here because block comments can
-continue on a new line, and the period character does not match
-newline characters.
+La parte anterior al operador _o_ coincide con dos caracteres de barra inclinada
+seguido de cualquier número de caracteres que no sean nuevas lineas. La parte
+para los comentarios de líneas múltiples es más complicado. Usamos `[^]`
+(cualquier caracter que no está en el conjunto de caracteres vacíos)
+como una forma de unir cualquier caracter. No podemos simplemente usar un
+punto aquí porque los comentarios de bloque pueden continuar en una nueva
+línea, y el carácter del período no coincide con caracteres de nuevas lineas.
 
-But the output for the last line appears to have gone wrong. Why?
+Pero la salida de la última línea parece haber salido mal. Por qué?
 
 {{index backtracking, greed, "regular expression"}}
 
-The `[^]*` part of the expression, as I described in the section on
-backtracking, will first match as much as it can. If that causes the
-next part of the pattern to fail, the matcher moves back one character
-and tries again from there. In the example, the matcher first tries to
-match the whole rest of the string and then moves back from there. It
-will find an occurrence of `*/` after going back four characters and
-match that. This is not what we wanted—the intention was to match a
-single comment, not to go all the way to the end of the code and find
-the end of the last block comment.
+La parte `[^]*` de la expresión, como describí en la sección
+retroceder, primero coincidirá tanto como sea posible. Si eso causa un falo en
+la siguiente parte del patrón, el emparejador retrocede un caracter
+e intenta nuevamente desde allí. En el ejemplo, el emparejador primero intenta
+emparejar el resto del string y luego se mueve hacia atrás desde allí. Este
+encontrará una ocurrencia de `*/` después de retroceder cuatro caracteres y
+emparejar eso. Esto no es lo que queríamos, la intención era hacer coincidir un
+solo comentario, no ir hasta el final del código y encontrar
+el final del último comentario de bloque.
 
-Because of this behavior, we say the repetition operators (`+`, `*`,
-`?`, and `{}`) are _((greed))y_, meaning they match as much as they
-can and backtrack from there. If you put a ((question mark)) after
-them (`+?`, `*?`, `??`, `{}?`), they become nongreedy and start by
-matching as little as possible, matching more only when the remaining
-pattern does not fit the smaller match.
+Debido a este comportamiento, decimos que los operadores de repetición (`+`, `*`,
+`?` y `{}`) son _ ((codiciosos)), lo que significa que coinciden con tanto como
+pueden y retroceden desde allí. Si colocas un ((signo de interrogación)) después
+de ellos (`+?`, `*?`, `??`, `{}?`), se vuelven no-codiciosos y comienzan a
+hacer coincidir lo menos posible, haciendo coincidir más solo cuando el
+patrón restante no se ajuste a la coincidencia más pequeña.
 
-And that is exactly what we want in this case. By having the star
-match the smallest stretch of characters that brings us to a `*/`, we
-consume one block comment and nothing more.
+Y eso es exactamente lo que queremos en este caso. Al hacer que la estrella
+coincida con el tramo más pequeño de caracteres que nos lleve a un `*/`,
+consumimos un comentario de bloque y nada más.
 
 ```{test: wrap}
-function stripComments(code) {
-  return code.replace(/\/\/.*|\/\*[^]*?\*\//g, "");
+function removerComentarios(codigo) {
+  return codigo.replace(/\/\/.*|\/\*[^]*?\*\//g, "");
 }
-console.log(stripComments("1 /* a */+/* b */ 1"));
+console.log(removerComentarios("1 /* a */+/* b */ 1"));
 // → 1 + 1
 ```
 
-A lot of ((bug))s in ((regular expression)) programs can be traced to
-unintentionally using a greedy operator where a nongreedy one would
-work better. When using a ((repetition)) operator, consider the
-nongreedy variant first.
+Una gran cantidad de ((errores)) en los programas de ((expresiones regulares))
+se pueden rastrear a intencionalmente usar un operador codicioso, donde uno
+que no sea codicioso trabajaria mejor. Al usar un operador de ((repetición)),
+considera la variante no-codiciosa primero.
 
 ## Dynamically creating RegExp objects
 
