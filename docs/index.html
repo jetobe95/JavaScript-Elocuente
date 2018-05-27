@@ -4,18 +4,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JavaScript Elocuente</title>
   <link rel=stylesheet href="css/ejs.css">
+  <style>
+    article { display: flex; margin: 0 2em; flex-wrap: wrap; max-width: none; max-width: calc(38em + 500px); }
+    #cover { flex-basis: 480px; max-width: 35em; flex-grow: 1; margin-right: 3em; }
+    #contents { flex-basis: 500px; flex-grow: 1; max-width: 35em;  }
+    #links { flex-basis: 100%; max-width: 35em; }
+    li.contents-intro:before { display: none; }
+    .toc h3 { float: right; font-family: inherit; margin: 0; font-weight: normal; font-size: 90%; }
+    @media screen and (max-width: 585px) { .toc h3 { display: none }}
+    @media screen and (max-width: 500px) { #cover { margin-right: 0 } article { margin: 0 } }
+    ul.links { list-style-type: circle; }
+    img.logo { vertical-align: text-top; padding: 0px 4px; border: 0; }
+  </style>
 </head>
 
 <article>
+<div id=cover>
   <h1>JavaScript Elocuente<div style="font-size: 70%">3ra edición</div></h2>
 
   <p>Este es un libro acerca de JavaScript, la programación y las
-  maravillas del mundo digital. Puedes leerlo aqui online, o conseguir tu
+  maravillas de lo digital. Puedes leerlo aqui online, o conseguir tu
   <a href="http://www.amazon.com/gp/product/1593275846/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&camp=1789&creative=9325&creativeASIN=1593275846&linkCode=as2&tag=marijhaver-20&linkId=VPXXXSRYC5COG5R5">versión en físico</a>
-  de la <em>segunda</em> edición. Por ahora se está trabajando en una versión
-  en físico de la tercera edición, pero aun no está claro cuándo estará disponible.</p>
+  de la <em>segunda</em> edición. Se espera que la edición en papel de la
+  tercera edición este <a href="https://www.amazon.com/Eloquent-JavaScript-3rd-Introduction-Programming/dp/1593279507/ref=as_sl_pc_tf_til?tag=marijhaver-20&linkCode=w00&linkId=a66fb027ed271b1cbd37e076b83c19b4&creativeASIN=1593279507">disponible</a>
+  este octubre.</p>
 
-  <p style="text-align: center; margin: 3em 0 2.5em">
+  <p style="text-align: center; margin: 2em 0">
     <img src="img/cover.jpg" alt="Cover image" style="border: 1px solid black; max-width: 100%; box-shadow: 4px 4px 7px rgba(0, 0, 0, 0.4)">
   </p>
 
@@ -49,25 +63,21 @@
   alt="Ghostery" class=logo></a>.</p>
   </div>
 
-  <h2>Contenidos</h2>
+</div>
 
-  <style>
-    li.contents-intro:before { display: none; }
-    .toc h3 { position: absolute; margin: 0; top: -2px; right: 0; font-family: inherit; font-weight: normal; font-size: 90%; }
-    @media screen and (max-width: 500px) { .toc h3 { display: none } }
-    ul.links { list-style-type: circle; }
-    img.logo { vertical-align: text-top; padding: 0px 4px; border: 0; }
-  </style>
+<div id=contents>
+
+  <h2>Contenidos</h2>
 
   <ol class=toc>
     <li class="contents-intro"><a href="00_intro.html">Introducción</a>
-    <li style="counter-reset: li; position: relative">
+    <li style="counter-reset: li">
       <h3>(Parte 1: Lenguaje)</h3>
       <a href="01_valores.html">Valores, Tipos, y Operadores</a>
     </li>
     <li><a href="02_estructura_de_programa.html">Estructura de Programa</a>
     <li><a href="03_funciones.html">Funciones</a>
-    <li><a href="04_data.html">Estructuras de Datos: Objetos y Arrays</a>
+    <li><a href="04_datos.html">Estructuras de Datos: Objetos y Arrays</a>
     <li><a href="05_orden_superior.html">Funciones de Orden Superior</a>
     <li><a href="06_objeto.html">La Vida Secreta de los Objetos</a>
     <li><a href="07_robot.html">Proyecto: Un Robot</a>
@@ -76,9 +86,9 @@
     <li><a href="10_modulos.html">Modulos</a>
     <li><a href="11_async.html">Programación Asincrónica</a>
     <li><a href="12_lenguaje.html">Proyecto: Un Lenguaje de Programación</a>
-    <li style="position: relative">
-      <h3>(Parte 2: El Navegador)</h3>
-      <a href="13_navegador.html">JavaScript y el Navegador</a>
+    <li>
+      <h3>(Parte 2: Navegador)</h3>
+      <a href="13_browser.html">JavaScript y el Navegador</a>
     </li>
     <li><a href="14_dom.html">El DOM (Document Object Model)</a>
     <li><a href="15_evento.html">Manejandro Eventos</a>
@@ -86,12 +96,16 @@
     <li><a href="17_canvas.html">Dibujando en Canvas</a>
     <li><a href="18_http.html">HTTP y Formularios</a>
     <li><a href="19_paint.html">Proyecto: Un Editor de Pixel Art</a>
-    <li style="position: relative">
+    <li>
       <h3>(Parte 3: Node)</h3>
       <a href="20_node.html">Node.js</a>
     </li>
     <li><a href="21_skillsharing.html">Proyecto: Sitio Web de Skill-Sharing</a>
   </ol>
+
+</div>
+
+<div id=links>
 
   <p>Una versión en papel de Eloquent JavaScript, incluyendo un capítulo
   adicional, esta siendo trabajada por
@@ -119,4 +133,5 @@
     <li><a href="https://karmazzin.gitbooks.io/eloquentjavascript_ru/content/">Русский (Rusa)</a></li>
   </ul>
 
+</div>
 </article>
