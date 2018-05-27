@@ -781,30 +781,30 @@ una u otra manera dependiendo sobre cuánto te ayuden los paquetes.
 
 hint}}
 
-### Roads module
+### Módulo de Caminos
 
 {{index "roads module (exercise)"}}
 
-Write a ((CommonJS module)), based on the example from [Chapter
-?](robot), that contains the array of roads and exports the graph
-data structure representing them as `roadGraph`. It should depend on a
-module `./graph`, which exports a function `buildGraph` that is used
-to build the graph. This function expects an array of two-element
-arrays (the start and end points of the roads).
+Escribe un ((módulo CommonJS)), basado en el ejemplo del [Capítulo 7](robot),
+que contenga el array de caminos y exporte la estructura de datos
+grafo que los representa como `grafoCamino`. Debería depender de un
+modulo `./grafo`, que exporta una función `construirGrafo` que se usa
+para construir el grafo. Esta función espera un array de arrays de
+dos elementos (los puntos de inicio y final de los caminos).
 
 {{if interactive
 
 ```{test: no}
-// Add dependencies and exports
+// Añadir dependencias y exportaciones
 
-const roads = [
-  "Alice's House-Bob's House",   "Alice's House-Cabin",
-  "Alice's House-Post Office",   "Bob's House-Town Hall",
-  "Daria's House-Ernie's House", "Daria's House-Town Hall",
-  "Ernie's House-Grete's House", "Grete's House-Farm",
-  "Grete's House-Shop",          "Marketplace-Farm",
-  "Marketplace-Post Office",     "Marketplace-Shop",
-  "Marketplace-Town Hall",       "Shop-Town Hall"
+const caminos = [
+  "Casa de Alicia-Casa de Bob",        "Casa de Alicia-Cabaña",
+  "Casa de Alicia-Oficina de Correos", "Casa de Bob-Ayuntamiento",
+  "Casa de Daria-Casa de Ernie",       "Casa de Daria-Ayuntamiento",
+  "Casa de Ernie-Casa de Grete",       "Casa de Grete-Granja",
+  "Casa de Grete-Tienda",              "Mercado-Granja",
+  "Mercado-Oficina de Correos",        "Mercado-Tienda",
+  "Mercado-Ayuntamiento",              "Tienda-Ayuntamiento"
 ];
 ```
 
@@ -814,51 +814,51 @@ if}}
 
 {{index "roads module (exercise)", "destructuring binding", "exports object"}}
 
-Since this is a ((CommonJS module)), you have to use `require` to
-import the graph module. That was described as exporting a
-`buildGraph` function, which you can pick out of its interface object
-with a destructuring `const` declaration.
+Como este es un ((módulo CommonJS)), debes usar `require` para
+importar el módulo grafo. Eso fue descrito como exportar una
+función `construirGrafo`, que puedes sacar de su objeto de interfaz
+con una declaración `const` de desestructuración.
 
-To export `roadGraph`, you add a property to the `exports` object.
-Because `buildGraph` takes a data structure that doesn't precisely
-match `roads`, the splitting of the road strings must happen in your
-module.
+Para exportar `grafoCamino`, agrega una propiedad al objeto `exports`.
+Ya que `construirGrafo` toma una estructura de datos que no empareja
+precisamente `caminos`, la división de los strings de los caminis
+debe ocurrir en tu módulo.
 
 hint}}
 
-### Circular dependencies
+### Dependencias circulares
 
 {{index dependency, "circular dependency", "require function"}}
 
-A circular dependency is a situation where module A depends on B, and
-B also, directly or indirectly, depends on A. Many module systems
-simply forbid this because whichever order you choose for loading such
-modules, you cannot make sure that each module's dependencies have
-been loaded before it runs.
+Una dependencia circular es una situación en donde el módulo A depende de B, y
+B también, directa o indirectamente, depende de A. Muchos sistemas de módulos
+simplemente prohíbne esto porque cualquiera que sea el orden que elijas
+para cargar tales módulos, no puedes asegurarse de que las dependencias de
+cada módulo han sido cargadas antes de que se ejecuten.
 
-((CommonJS modules)) allow a limited form of cyclic dependencies. As
-long as the modules do not replace their default `exports` object, and
-don't access each other's interface until after they finish loading,
-cyclic dependencies are okay.
+Los ((modulos CommonJS)) permiten una forma limitada de dependencias cíclicas.
+Siempre que los módulos no reemplacen a su objeto `exports` predeterminado, y
+no accedan a la interfaz de las demás hasta que terminen de cargar,
+las dependencias cíclicas están bien.
 
-The `require` function given [earlier in this
-chapter](modules#require) supports this type of dependency cycle. Can
-you see how it handles cycles? What would go wrong when a module in a
-cycle _does_ replace its default `exports` object?
+La función `require` dada [anteriormente en este capítulo](modulos#require)
+es compatible con este tipo de ciclo de dependencias. Puedes
+ver cómo maneja los ciclos? Qué iría mal cuando un módulo en un
+ciclo _reemplace_ su objeto `exports` por defecto?
 
 {{hint
 
 {{index overriding, "circular dependency", "exports object"}}
 
-The trick is that `require` adds modules to its cache _before_ it
-starts loading the module. That way, if any `require` call made while
-it is running tries to load it, it is already known and the current
-interface will be returned, rather than starting to load the module
-once more (which would eventually overflow the stack).
+El truco es que `require` agrega módulos a su caché _antes_ de
+comenzar a cargar el módulo. De esa forma, si se realiza una llamada `require`
+mientras está ejecutando el intento de cargarlo, ya es conocido y la
+interfaz actual sera retornada, en lugar de comenzar a cargar el módulo
+una vez más (lo que eventualmente desbordaría la pila).
 
-If a module overwrites its `module.exports` value, any other module
-that has received its interface value before it finished loading will
-have gotten hold of the default interface object (which is likely
-empty), rather than the intended interface value.
+Si un módulo sobrescribe su valor `module.exports`, cualquier otro módulo
+que haya recibido su valor de interfaz antes de que termine de cargarse
+ha conseguido el objeto de interfaz predeterminado (que es probable que este
+vacío), en lugar del valor de interfaz previsto.
 
 hint}}
