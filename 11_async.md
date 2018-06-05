@@ -1,11 +1,11 @@
 {{meta {load_files: ["code/crow-tech.js", "code/chapter/11_async.js"]}}}
 
-# Asynchronous Programming
+# Programación Asincrónica
 
 {{quote {author: "Laozi", title: "Tao Te Ching", chapter: true}
 
-Who can wait quietly while the mud settles?\
-Who can remain still until the moment of action?
+Quién puede esperar tranquilamente mientras el barro se asienta?\
+Quién puede permanecer en calma hasta el momento de actuar?
 
 quote}}
 
@@ -13,94 +13,96 @@ quote}}
 
 {{figure {url: "img/chapter_picture_11.jpg", alt: "Picture of two crows on a branch", chapter: framed}}}
 
-The central part of a computer, the part that carries out the
-individual steps that make up our programs, is called the
-_((processor))_. The programs we have seen so far are things that will
-keep the processor busy until they have finished their work. The speed
-at which something like a loop that manipulates numbers can be
-executed depends pretty much entirely on the speed of the processor.
+La parte central de una computadora, la parte que lleva a cabo los
+pasos individuales que componen nuestros programas, es llamada
+_((procesador))_. Los programas que hemos visto hasta ahora son cosas que
+mantienen al procesador ocupado hasta que hayan terminado su trabajo. La
+velocidad a la que algo como un ciclo que manipule números pueda ser
+ejecutado, depende casi completamente de la velocidad del procesador.
 
-But many programs interact with things outside of the processor. For
-example, they may communicate over a computer ((network)) or request
-data from the ((hard disk))—which is a lot slower than getting it from
-((memory)).
+Pero muchos programas interactúan con cosas fuera del procesador. por
+ejemplo, podrian comunicarse a través de una ((red)) de computadoras o
+solicitar datos del ((disco duro))—lo que es mucho más lento que
+obtenerlos desde la ((memoria)).
 
-When such a thing is happening, it would be a shame to let the
-processor sit idle—there might be some other work it could do in the
-meantime. In part, this is handled by your operating system, which
-will switch the processor between multiple running programs. But that
-doesn't help when we want a _single_ program to be able to make
-progress while it is waiting for a network request.
+Cuando una cosa como tal este sucediendo, sería una pena dejar que
+el procesador se mantenga inactivo—podría haber algún otro trabajo que
+este pueda hacer en el mientras tanto. En parte, esto es manejado por tu
+sistema operativo, que cambiará el procesador entre múltiples programas en
+ejecución. Pero eso no ayuda cuando queremos que un _unico_ programa pueda
+hacer progreso mientras este espera una solicitud de red.
 
-## Asynchronicity
+## Asincronicidad
 
 {{index "synchronous programming"}}
 
-In a _synchronous_ programming model, things happen one at a time.
-When you call a function that performs a long-running action, it only
-returns when the action has finished and it can return the result.
-This stops your program for the time the action takes.
+En un modelo de programación _sincrónico_, las cosas suceden una a la vez.
+Cuando llamas a una función que realiza una acción de larga duración, solo
+retorna cuando la acción ha terminado y puede retornar el resultado.
+Esto detiene tu programa durante el tiempo que tome la acción.
 
 {{index "asynchronous programming"}}
 
-An _asynchronous_ model allows multiple things to happen at the same
-time. When you start an action, your program continues to run. When
-the action finishes, the program is informed and gets access to the
-result (for example, the data read from disk).
+Un modelo _asincrónico_ permite que ocurran varias cosas al mismo tiempo.
+Cuando comienzas una acción, tu programa continúa ejecutándose. Cuando
+la acción termina, el programa es informado y tiene acceso al
+resultado (por ejemplo, los datos leídos del disco).
 
-We can compare synchronous and asynchronous programming using a small
-example: a program that fetches two resources from the ((network)) and
-then combines results.
+Podemos comparar a la programación síncrona y asincrónica usando un pequeño
+ejemplo: un programa que obtiene dos recursos de la ((red)) y
+luego combina resultados.
 
 {{index "synchronous programming"}}
 
-In a synchronous environment, where the request function only returns
-after it has done its work, the easiest way to perform this task is to
-make the requests one after the other. This has the drawback that the
-second request will be started only when the first has finished. The
-total time taken will be at least the sum of the two response times.
+En un entorno síncrono, donde la función de solicitud solo retorna
+una vez que ha hecho su trabajo, la forma más fácil de realizar esta tarea es
+realizar las solicitudes una después de la otra. Esto tiene el inconveniente de
+que la segunda solicitud se iniciará solo cuando la primera haya finalizado.
+El tiempo total de ejecución será como minimo la suma de los dos tiempos de
+respuesta.
 
 {{index parallelism}}
 
-The solution to this problem, in a synchronous system, is to start
-additional ((thread))s of control. A _thread_ is another running program
-whose execution may be interleaved with other programs by the
-operating system—since most modern computers contain multiple
-processors, multiple threads may even run at the same time, on
-different processors. A second thread could start the second request,
-and then both threads wait for their results to come back, after which
-they resynchronize to combine their results.
+La solución a este problema, en un sistema síncrono, es comenzar
+((hilo))s adicionales de control. Un _hilo_ es otro programa activo
+cuya ejecución puede ser intercalada con otros programas por el
+sistema operativo—ya que la mayoría de las computadoras modernas contienen
+múltiples procesadores, múltiples hilos pueden incluso ejecutarse al mismo
+tiempo, en diferentes procesadores. Un segundo hilo podría iniciar la segunda
+solicitud, y luego ambos subprocesos esperan a que los resultados vuelvan,
+después de lo cual se vuelven a resincronizar para combinar sus resultados.
 
 {{index CPU, blocking, "asynchronous programming", timeline, "callback function"}}
 
-In the following diagram, the thick lines represent time the program
-spends running normally, and the thin lines represent time spent
-waiting for the network. In the synchronous model, the time taken by
-the network is _part_ of the timeline for a given thread of control.
-In the asynchronous model, starting a network action conceptually
-causes a _split_ in the timeline. The program that initiated the
-action continues running, and the action happens alongside it,
-notifying the program when it is finished.
+En el siguiente diagrama, las líneas gruesas representan el tiempo que el
+programa pasa corriendo normalmente, y las líneas finas representan el tiempo
+pasado esperando la red. En el modelo síncrono, el tiempo empleado por
+la red es _parte_ de la línea de tiempo para un hilo de control dado.
+En el modelo asincrónico, comenzar una acción de red conceptualmente
+causa una _división_ en la línea del tiempo. El programa que inició
+la acción continúa ejecutándose, y la acción ocurre junto a el,
+notificando al programa cuando está termina.
 
 {{figure {url: "img/control-io.svg", alt: "Control flow for synchronous and asynchronous programming",width: "8cm"}}}
 
 {{index "control flow", "asynchronous programming", verbosity}}
 
-Another way to describe the difference is that waiting for actions to
-finish is _implicit_ in the synchronous model, while it is _explicit_,
-under our control, in the asynchronous one.
+Otra forma de describir la diferencia es que esperar que las acciones
+terminen es _implicito_ en el modelo síncrono, mientras que es _explicito_,
+bajo nuestro control, en el asincrónico.
 
-Asynchronicity cuts both ways. It makes expressing programs that do
-not fit the straight-line model of control easier, but it can also
-make expressing programs that do follow a straight line more awkward.
-We'll see some ways to address this awkwardness later in the chapter.
+La asincronicidad corta en ambos sentidos. Hace que expresar programas que
+hagan algo no se ajuste al modelo de control lineal más fácil, pero también
+puede hacer que expresar programas que siguen una línea recta sea más
+incómodo. Veremos algunas formas de abordar esta incomodidad más adelante en
+el capítulo.
 
-Both of the important JavaScript programming platforms—((browser))s
-and ((Node.js))—make operations that might take a while asynchronous,
-rather than relying on ((thread))s. Since programming with threads is
-notoriously hard (understanding what a program does is much more
-difficult when it's doing multiple things at once), this is generally
-considered a good thing.
+Ambas de las plataformas de programación JavaScript importantes—((navegadore))s
+y ((Node.js))—realizan operaciones que pueden tomar un tiempo asincrónicamente,
+en lugar de confiar en ((hilo))s. Dado que la programación con hilos es
+notoriamente difícil (entender lo que hace un programa es mucho más
+difícil cuando está haciendo varias cosas a la vez), esto es generalmente
+considerado una buena cosa.
 
 ## Crow tech
 
