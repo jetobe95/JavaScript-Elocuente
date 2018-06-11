@@ -104,175 +104,179 @@ notoriamente difícil (entender lo que hace un programa es mucho más
 difícil cuando está haciendo varias cosas a la vez), esto es generalmente
 considerado una buena cosa.
 
-## Crow tech
+## Tecnología cuervo
 
-Most people are aware of the fact that ((crow))s are very smart birds.
-They can use tools, plan ahead, remember things, and even communicate
-these things among themselves.
+La mayoría de las personas son conscientes del hecho de que los ((cuervo))s
+son pájaros muy inteligentes. Pueden usar herramientas, planear con anticipación,
+recordar cosas e incluso comunicarse estas cosas entre ellos.
 
-What most people don't know is that they are capable of many things
-that they keep well hidden from us. I've been told by a reputable (if
-somewhat eccentric) expert on ((corvid))s that crow technology is not
-far behind human technology, and they are catching up.
+Lo que la mayoría de la gente no sabe, es que son capaces de hacer muchas cosas
+que mantienen bien escondidas de nosotros. Personas de buena
+reputación (un tanto excéntricas) expertas en ((córvidos)), me han dicho
+que la tecnología cuervo no esta muy por detrás de la tecnología humana,
+y que nos estan alcanzando.
 
-For example, many crow cultures have the ability to construct
-computing devices. These are not electronic, as human computing
-devices are, but operate through the actions of tiny insects, a
-species closely related to the ((termite)), that has developed a
-((symbiotic relationship)) with the crows. The birds provide them with
-food, and in return the insects build and operate their complex
-colonies which, with the help of the living creatures inside them,
-perform computations.
+Por ejemplo, muchas culturas cuervo tienen la capacidad de construir
+dispositivos informáticos. Estos no son electrónicos, como lo son
+los dispositivos informáticos humanos, pero operan a través de las acciones de
+pequeños insectos, una especie estrechamente relacionada con las ((termitas)),
+que ha desarrollado una ((relación simbiótica)) con los cuervos. Los pájaros
+les proporcionan comida, y a cambio los insectos construyen y operan sus
+complejas colonias que, con la ayuda de las criaturas vivientes dentro de ellos,
+realizan computaciones.
 
-Such colonies are usually located in big, long-lived nests. The birds
-and insects work together to build a network of bulbous clay
-structures, hidden between the twigs of the nest, in which the insects
-live and work.
+Tales colonias generalmente se encuentran en nidos grandes de larga vida.
+Las aves e insectos trabajan juntos para construir una red de estructuras
+bulbosas hechas de arcilla, escondidas entre las ramitas del nido,
+en el que los insectos viven y trabajan.
 
-To communicate with other devices, these machines use light signals.
-The crows embed pieces of reflective material in special communication
-stalks, and the insects aim these to reflect light at another nest,
-encoding data as a sequence of quick flashes. This means that only
-nests that have an unbroken visual connection can communicate.
+Para comunicarse con otros dispositivos, estas máquinas usan señales de luz.
+Los cuervos incrustan piezas de material reflectante en tallos de
+comunicación especial, y los insectos apuntan estos para reflejar la luz hacia
+otro nido, codificando los datos como una secuencia de flashes rápidos.
+Esto significa que solo los nidos que tienen una conexión visual ininterrumpida
+pueden comunicarse entre ellos.
 
-Our friend the corvid expert has mapped the network of crow nests in
-the village of ((Hières-sur-Amby)), on the banks of the river Rhône.
-This map shows the nests and their connections.
+Nuestro amigo, el experto en córvidos, ha mapeado la red de nidos de cuervo en
+el pueblo de ((Hières-sur-Amby)), a orillas del río Ródano.
+Este mapa muestra los nidos y sus conexiones.
 
 {{figure {url: "img/Hieres-sur-Amby.png", alt: "A network of crow nests in a small village"}}}
 
-In an astounding example of ((convergent evolution)), crow computers
-run JavaScript. In this chapter we'll write some basic networking
-functions for them.
+En un ejemplo asombroso de ((evolución convergente)), las computadoras cuervo
+ejecutan JavaScript. En este capítulo vamos a escribir algunas funciones de
+redes básicas para ellos.
 
-## Callbacks
+## Devolución de llamadas
 
 {{indexsee [function, callback], "callback function"}}
 
-One approach to ((asynchronous programming)) is to make functions that
-perform a slow action take an extra argument, a _((callback
-function))_. The action is started, and when it finishes, the callback
-function is called with the result.
+Un enfoque para la ((programación asincrónica)) es hacer que las funciones que
+realizan una acción lenta, tomen un argumento adicional, una _((función de
+devolución de llamada))_. La acción se inicia y, cuando esta finaliza,
+la función de devolución es llamada con el resultado.
 
 {{index "setTimeout function", waiting}}
 
-As an example, the `setTimeout` function, available both in Node.js
-and in browsers, waits a given amount of milliseconds (a second is a
-thousand milliseconds) and then calls a function.
+Como ejemplo, la función `setTimeout`, disponible tanto en Node.js
+como en navegadores, espera una cantidad determinada de milisegundos
+(un segundo son mil milisegundos) y luego llama una función.
 
 ```{test: no}
 setTimeout(() => console.log("Tick"), 500);
 ```
 
-Waiting is not generally a very important type of work, but it can be
-useful when doing something like updating an animation or checking whether
-something is taking longer than a given amount of ((time)).
+Esperar no es generalmente un tipo de trabajo muy importante, pero puede ser
+útil cuando se hace algo como actualizar una animación o verificar si
+algo está tardando más que una cantidad dada de ((tiempo)).
 
-Performing multiple asynchronous actions in a row using callbacks
-means that you have to keep passing new functions to handle the
-((continuation)) of the computation after the actions.
+La realización de múltiples acciones asíncronas en una fila utilizando
+devoluciones de llamada significa que debes seguir pasando nuevas funciones para
+manejar la ((continuación)) de la computación después de las acciones.
 
 {{index "hard disk"}}
 
-Most crow nest computers have a long-term data storage bulb, where
-pieces of information are etched into twigs so that they can be
-retrieved later. Etching or finding a piece of data takes a moment, so
-the interface to long-term storage is asynchronous, and uses callback
-functions.
+La mayoría de las computadoras en los nidos de los cuervos tienen un
+bulbo de almacenamiento de datos a largo plazo, donde las piezas de información
+se graban en ramitas para que estas puedan ser recuperadas más tarde.
+Grabar o encontrar un fragmento de información requiere un momento, por lo que
+la interfaz para el almacenamiento a largo plazo es asíncrona y utiliza
+funciones de devolución de llamada.
 
-Storage bulbs store pieces of ((JSON))-encodable data under names. A
-((crow)) might store information about the places where it's hidden
-away food under the name `"food caches"`, which could hold an array of
-names that point at other pieces of data, describing the actual cache.
-To look up a food ((cache)) in the storage bulbs of the _Big Oak_
-nest, a crow could run code like this:
+Los bulbos de almacenamiento almacenan piezas de ((JSON))-datos codificables
+bajo nombres. Un ((cuervo)) podría almacenar información sobre los lugares
+donde hay comida escondida bajo el nombre `"caches de alimentos"`, que podría
+contener un array de nombres que apuntan a otros datos, que describen el caché
+real. Para buscar un ((caché)) de alimento en los bulbos de almacenamiento del
+nido _Gran Roble_, un cuervo podría ejecutar código como este:
 
-{{index "readStorage function"}}
+{{index "leerAlmacenamiento function"}}
 
 ```{includeCode: "top_lines: 1"}
-import {bigOak} from "./crow-tech";
+import {granRoble} from "./tecnologia-cuervo";
 
-bigOak.readStorage("food caches", caches => {
-  let firstCache = caches[0];
-  bigOak.readStorage(firstCache, info => {
-    console.log(info);
+granRoble.leerAlmacenamiento("caches de alimentos", caches => {
+  let primerCache = caches[0];
+  granRoble.leerAlmacenamiento(primerCache, informacion => {
+    console.log(informacion);
   });
 });
 ```
 
-(All binding names and strings have been translated from crow language
-to English.)
+(Todos los nombres de las vinculaciones y los strings se han traducido del
+lenguaje cuervo a Español.)
 
-This style of programming is workable, but the indentation level
-increases with each asynchronous action, because you end up in another
-function. Doing more complicated things, like running multiple actions
-at the same time, can get a little awkward.
+Este estilo de programación es viable, pero el nivel de indentación
+aumenta con cada acción asincrónica, ya que terminas en otra
+función. Hacer cosas más complicadas, como ejecutar múltiples acciones
+al mismo tiempo, puede ser un poco incómodo.
 
-Crow nest computers are built to communicate using
-((request))-((response)) pairs. That means one nest sends a message to
-another nest, which then immediately sends a message back, confirming
-receipt and possibly including a reply to a question asked in the
-message.
+Las computadoras cuervo están construidas para comunicarse usando pares de
+((solicitud))-((respuesta)). Eso significa que un nido envía un mensaje a
+otro nido, el cual inmediatamente envía un mensaje de vuelta, confirmando el
+recibo y, posiblemente, incluyendo una respuesta a una pregunta formulada
+en el mensaje.
 
-Each message is tagged with a _type_, which determines how it is
-handled. Our code can define handlers for specific request types, and
-when such a request comes in, the handler is called to produce a
-response.
+Cada mensaje está etiquetado con un _tipo_, que determina cómo este es
+manejado. Nuestro código puede definir manejadores para tipos de solicitud
+específicos, y cuando se recibe una solicitud de este tipo, se llama al
+controlador para que este produzca una respuesta.
 
 {{index "crow-tech module", "send method"}}
 
-The interface exported by the `"./crow-tech"` module provides
-callback-based functions for communication. Nests have a `send` method
-that sends off a request. It expects the name of the target nest, the
-type of the request, and the content of the request as its first three
-arguments, and a function to call when a response comes in as its
-fourth and last argument.
+La interfaz exportada por el módulo `"./tecnologia-cuervo"` proporciona
+funciones de devolución de llamada para la comunicación. Los nidos tienen un
+método `enviar` que envía una solicitud. Este espera el nombre del nido
+objetivo, el tipo de solicitud y el contenido de la solicitud como sus
+primeros tres argumentos, y una función a llamar cuando llega una respuesta
+como su cuarto y último argumento.
 
 ```
-bigOak.send("Cow Pasture", "note", "Let's caw loudly at 7PM",
-            () => console.log("Note delivered."));
+granRoble.send("Pastura de Vacas", "nota", "Vamos a graznar fuerte a las 7PM",
+            () => console.log("Nota entregada."));
 ```
 
-But to make nests capable of receiving that request, we first have to
-define a ((request type)) named `"note"`. The code that handles the
-requests has to run not just on this nest-computer, but on all nests
-that can receive messages of this type. We'll just assume that a crow
-flies over and installs our handler code on all the nests.
+Pero para hacer nidos capaces de recibir esa solicitud, primero tenemos que
+definir un ((tipo de solicitud)) llamado `"nota"`. El código que maneja
+las solicitudes debe ejecutarse no solo en este nido-computadora, sino en
+todos los nidos que puedan recibir mensajes de este tipo. Asumiremos que un
+cuervo sobrevuela e instala nuestro código controlador en todos los nidos.
 
-{{index "defineRequestType function"}}
+{{index "definirTipoSolicitud function"}}
 
 ```{includeCode: true}
-import {defineRequestType} from "./crow-tech";
+import {definirTipoSolicitud} from "./tecnologia-cuervo";
 
-defineRequestType("note", (nest, content, source, done) => {
-  console.log(`${nest.name} received note: ${content}`);
-  done();
+definirTipoSolicitud("nota", (nido, contenido, fuente, listo) => {
+  console.log(`${nido.nombre} recibio nota: ${contenido}`);
+  listo();
 });
 ```
 
-The `defineRequestType` function defines a new type of request. The
-example adds support for `"note"` requests, which just sends a note to
-a given nest. Our implementation calls `console.log` so that we can
-verify that the request arrived. Nests have a `name` property that
-holds their name.
+La función `definirTipoSolicitud` define un nuevo tipo de solicitud. El
+ejemplo agrega soporte para solicitudes de tipo `"nota"`, que simplemente envían
+una nota a un nido dado. Nuestra implementación llama a `console.log` para que
+podamos verificar que la solicitud llegó. Los nidos tienen una propiedad
+`nombre` que contiene su nombre.
 
 {{index "asynchronous programming"}}
 
-The fourth argument given to the handler, `done`, is a callback
-function that it must call when it is done with the request. If we had
-used the handler's ((return value)) as the response value, that would
-mean that a request handler can't itself perform asynchronous actions.
-A function doing asynchronous work typically returns before the work
-is done, having arranged for a callback to be called when it
-completes. So we need some asynchronous mechanism—in this case,
-another ((callback function))—to signal when a response is available.
+El cuarto argumento dado al controlador, `listo`, es una función de
+devolución de llamada que debe ser llamada cuando se finaliza con la solicitud.
+Si hubiesemos utilizado el ((valor de retorno)) del controlador como el valor
+de respuesta, eso significaria que un controlador de solicitud no puede realizar
+acciones  asincrónicas por sí mismo. Una función que realiza trabajos asíncronos
+normalmente retorna antes de que el trabajo este hecho, habiendo arreglado que se
+llame una devolución de llamada cuando este completada. Entonces, necesitamos algún
+mecanismo asíncrono, en este caso, otra ((función de devolución de
+llamada))—para indicar cuándo hay una respuesta disponible.
 
-In a way, asynchronicity is _contagious_. Any function that calls a
-function that works asynchronously must itself be asynchronous, using
-a callback or similar mechanism to deliver its result. Calling
-callback is somewhat more involved and error-prone than simply
-returning a value, so needing to structure large parts of your program
-that way is not great.
+En cierto modo, la asincronía es _contagiosa_. Cualquier función que llame a una
+función que funcione asincrónicamente debe ser asíncrona en si misma, utilizando
+una devolución de llamada o algun mecanismo similar para entregar su resultado.
+Llamar devoluciones de llamada es algo más involucrado y propenso a errores que
+simplemente retornar un valor, por lo que necesitar estructurar grandes
+partes de tu programa de esa manera no es algo muy bueno.
 
 ## Promises
 
@@ -334,16 +338,16 @@ resolve it.
 {{index "storage function"}}
 
 This is how you'd create a promise-based interface for the
-`readStorage` function.
+`leerAlmacenamiento` function.
 
 ```{includeCode: "top_lines: 5"}
 function storage(nest, name) {
   return new Promise(resolve => {
-    nest.readStorage(name, result => resolve(result));
+    nest.leerAlmacenamiento(name, result => resolve(result));
   });
 }
 
-storage(bigOak, "enemies")
+storage(granRoble, "enemies")
   .then(value => console.log("Got", value));
 ```
 
@@ -468,7 +472,7 @@ Even when a ((request)) and its ((response)) are successfully
 delivered, the response may indicate failure—for example, if the
 request tries to use a request type that hasn't been defined or the
 handler throws an error. To support this, `send` and
-`defineRequestType` follow the convention mentioned before, where the
+`definirTipoSolicitud` follow the convention mentioned before, where the
 first argument passed to callbacks is the failure reason, if any, and
 the second is the actual result.
 
@@ -480,7 +484,7 @@ wrapper.
 ```{includeCode: true}
 class Timeout extends Error {}
 
-function request(nest, target, type, content) {
+function request(nest, target, type, contenido) {
   return new Promise((resolve, reject) => {
     let done = false;
     function attempt(n) {
@@ -531,16 +535,16 @@ In general, we will not be building a world-class, robust network
 today. But that's okay—crows don't have very high expectations yet
 when it comes to computing.
 
-{{index "defineRequestType function", "requestType function"}}
+{{index "definirTipoSolicitud function", "requestType function"}}
 
 To isolate ourselves from callbacks altogether, we'll go ahead and
-also define a wrapper for `defineRequestType` that allows the handler
+also define a wrapper for `definirTipoSolicitud` that allows the handler
 function to return a promise or plain value, and wires that up to the
 callback for us.
 
 ```{includeCode: true}
 function requestType(name, handler) {
-  defineRequestType(name, (nest, content, source,
+  definirTipoSolicitud(name, (nest, content, fuente,
                            callback) => {
     try {
       Promise.resolve(handler(nest, content, source))
@@ -680,7 +684,7 @@ network with a piece of information until all nodes have it.
 We can call `sendGossip` to see a message flow through the village.
 
 ```
-sendGossip(bigOak, "Kids with airgun in the park");
+sendGossip(granRoble, "Kids with airgun in the park");
 ```
 
 if}}
@@ -816,7 +820,7 @@ We can now send a message to the nest in the church tower, which is
 four network hops removed.
 
 ```
-routeRequest(bigOak, "Church Tower", "note",
+routeRequest(granRoble, "Church Tower", "note",
              "Incoming jackdaws!");
 ```
 
@@ -943,7 +947,7 @@ rejected.
 {{if interactive
 
 ```{startCode: true}
-findInStorage(bigOak, "events on 2017-12-21")
+findInStorage(granRoble, "events on 2017-12-21")
   .then(console.log);
 ```
 
@@ -1171,7 +1175,7 @@ output, listing the nest that was slowest to respond.
 {{if interactive
 
 ```
-chicks(bigOak, 2017).then(console.log);
+chicks(granRoble, 2017).then(console.log);
 ```
 
 if}}
@@ -1278,7 +1282,7 @@ function locateScalpel2(nest) {
   // Your code here.
 }
 
-locateScalpel(bigOak).then(console.log);
+locateScalpel(granRoble).then(console.log);
 // → Butcher Shop
 ```
 
