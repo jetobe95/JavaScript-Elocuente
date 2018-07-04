@@ -278,280 +278,284 @@ Llamar devoluciones de llamada es algo más involucrado y propenso a errores que
 simplemente retornar un valor, por lo que necesitar estructurar grandes
 partes de tu programa de esa manera no es algo muy bueno.
 
-## Promises
+## Promesas
 
-Working with abstract concepts is often easier when those concepts can
-be represented by ((value))s. In the case of asynchronous actions you
-could, instead of arranging for a function to be called at some point
-in the future, return an object that represents this future event.
+Trabajar con conceptos abstractos es a menudo más fácil cuando esos conceptos
+pueden ser representados por ((valores)). En el caso de acciones asíncronas,
+podrías, en lugar de organizar a una función para que esta sea llamada
+en algún momento en el futuro, retornar un objeto que represente este
+evento en el futuro.
 
 {{index "Promise class", "asynchronous programming"}}
 
-This is what the standard class `Promise` is for. A _promise_ is an
-asynchronous action that may complete at some point and produce a
-value. It is able to notify anyone who is interested when its value is
-available.
+Esto es para lo que es la clase estándar `Promise` ("Promesa").
+Una _promesa_ es una acción asíncrona que puede completarse en algún punto
+y producir un valor. Esta puede notificar a cualquier persona que esté
+interesada cuando su valor este disponible.
 
 {{index "Promise.resolve function", "resolving (a promise)"}}
 
-The easiest way to create a promise is by calling `Promise.resolve`.
-This function ensures that the value you give it is wrapped in a
-promise. If it's already a promise, it is simply returned—otherwise,
-you get a new promise that immediately finishes with your
-value as its result.
+La forma más fácil de crear una promesa es llamando a `Promise.resolve` ("Promesa.resolver").
+Esta función se asegura de que el valor que le des, sea envuelto en una
+promesa. Si ya es una promesa, simplemente es retornada—de lo contrario,
+obtienes una nueva promesa que termina de inmediato con tu
+valor como su resultado.
 
 ```
-let fifteen = Promise.resolve(15);
-fifteen.then(value => console.log(`Got ${value}`));
-// → Got 15
+let quince = Promise.resolve(15);
+quince.then(valor => console.log(`Obtuve ${valor}`));
+// → Obtuve 15
 ```
 
 {{index "then method"}}
 
-To get the result of a promise, you can use its `then` method. This
-registers a ((callback function)) to be called when the promise
-resolves and produces a value. You can add multiple callbacks to a
-single promise, and they will be called, even if you add them after
-the promise has already _resolved_ (finished).
+Para obtener el resultado de una promesa, puede usar su método `then` ("entonces").
+Este registra una (función de devolución de llamada) para que sea llamada cuando la
+promesa resuelva y produzca un valor. Puedes agregar múltiples devoluciones de
+llamada a una única promesa, y serán llamadas, incluso si las agregas después
+de que la promesa ya haya sido _resuelta_ (terminada).
 
-But that's not all the `then` method does. It returns another promise,
-which resolves to the value that the handler function returns or, if
-that returns a promise, waits for that promise and then resolves to
-its result.
+Pero eso no es todo lo que hace el método `then`. Este retorna otra promesa,
+que resuelve al valor que retorna la función del controlador o, si
+esa retorna una promesa, espera por esa promesa y luego resuelve
+su resultado.
 
-It is useful to think of promises as a device to move values into an
-asynchronous reality. A normal value is simply there. A promised value
-is a value that _might_ already be there or might appear at some point
-in the future. Computations defined in terms of promises act on such
-wrapped values and are executed asynchronously as the values become
-available.
+Es útil pensar acerca de las promesas como dispositivos para mover valores a una
+realidad asincrónica. Un valor normal simplemente esta allí. Un valor prometido
+es un valor que _podría_ ya estar allí o podría aparecer en algún momento
+en el futuro. Las computaciones definidas en términos de promesas actúan en
+tales valores envueltos y se ejecutan de forma asíncrona a medida los
+valores se vuelven disponibles.
 
 {{index "Promise class"}}
 
-To create a promise, you can use `Promise` as a constructor. It has a
-somewhat odd interface—the constructor expects a function as argument,
-which it immediately calls, passing it a function that it can use to
-resolve the promise. It works this way, instead of for example with a
-`resolve` method, so that only the code that created the promise can
-resolve it.
+Para crear una promesa, puedes usar `Promise` como un constructor. Tiene una
+interfaz algo extraña—el constructor espera una función como argumento, a la
+cual llama inmediatamente, pasando una función que puede usar para
+resolver la promesa. Funciona de esta manera, en lugar de, por ejemplo, con un
+método `resolve`, de modo que solo el código que creó la promesa pueda
+resolverla.
 
 {{index "storage function"}}
 
-This is how you'd create a promise-based interface for the
-`leerAlmacenamiento` function.
+Así es como crearía una interfaz basada en promesas para la función
+`leerAlmacenamiento`.
 
 ```{includeCode: "top_lines: 5"}
-function storage(nest, name) {
+function almacenamiento(nido, nombre) {
   return new Promise(resolve => {
-    nest.leerAlmacenamiento(name, result => resolve(result));
+    nido.leerAlmacenamiento(nombre, resultado => resolve(resultado));
   });
 }
 
-storage(granRoble, "enemies")
-  .then(value => console.log("Got", value));
+almacenamiento(granRoble, "enemigos")
+  .then(valor => console.log("Obtuve", valor));
 ```
 
-This asynchronous function returns a meaningful value. This is the
-main advantage of promises—they simplify the use of asynchronous
-functions. Instead of having to pass around callbacks, promise-based
-functions look similar to regular ones: they take input as arguments
-and return their output. The only difference is that the output may
-not be available yet.
+Esta función asíncrona retorna un valor significativo. Esta es la
+principal ventaja de las promesas—simplifican el uso de funciones asincrónicas.
+En lugar de tener que pasar devoluciones de llamadas, las funciones basadas en
+promesas son similares a las normales: toman entradas como
+argumentos y retornan su resultado. La única diferencia es que la salida
+puede que no este disponible inmediatamente.
 
-## Failure
+## Fracaso
 
 {{index "exception handling"}}
 
-Regular JavaScript computations can fail by throwing an exception.
-Asynchronous computations often need something like that. A network
-request may fail, or some code that is as part of the asynchronous
-computation may throw an exception.
+Las computaciones regulares en JavaScript pueden fallar lanzando una excepción.
+Las computaciones asincrónicas a menudo necesitan algo así. Una solicitud de
+red puede fallar, o algún código que sea parte de la computación asincrónica
+puede arrojar una excepción.
 
 {{index "callback function", error}}
 
-One of the most pressing problems with the callback style of
-asynchronous programming is that it makes it extremely difficult to
-make sure failures are properly reported to the callbacks.
+Uno de los problemas más urgentes con el estilo de devolución de llamadas
+en la programación asíncrona es que hace que sea extremadamente difícil
+asegurarte de que las fallas sean reportadas correctamente a las devoluciones de
+llamada.
 
-A widely used convention is that the first argument to the callback is
-used to indicate that the action failed, and the second contains the
-value produced by the action when it was successful. Such callback
-functions must always check whether they received an exception, and
-make sure that any problems they cause, including exceptions thrown by
-functions they call, are caught and given to the right function.
+Una convención ampliamente utilizada es que el primer argumento para la
+devolución de llamada es usado para indicar que la acción falló, y el segundo
+contiene el valor producido por la acción cuando tuvo éxito. Tales funciones
+de devolución de llamadas siempre deben verificar si recibieron una excepción, y
+asegurarse de que cualquier problema que causen, incluidas las excepciones
+lanzadas por las funciones que estas llaman, sean atrapadas y entregadas a la
+función correcta.
 
 {{index "rejecting (a promise)", "resolving (a promise)", "then method"}}
 
-Promises make this easier. They can be either resolved (the action
-finished successfully) or rejected (it failed). Resolve handlers (as
-registered with `then`) are only called when the action is successful,
-and rejections are automatically propagated to the new promise that is
-returned by `then`. And when a handler throws an exception, this
-automatically causes the promise produced by its `then` call to be
-rejected. So if any element in a chain of asynchronous actions fails,
-the outcome of the whole chain is marked as rejected, and no regular
-handlers are called beyond the point where it failed.
+Las promesas hacen esto más fácil. Estas pueden ser resueltas (la acción
+termino con éxito) o rechazadas (esta falló). Los controladores de resolución
+(registrados con `then`) solo se llaman cuando la acción es exitosa,
+y los rechazos se propagan automáticamente a la nueva promesa que es
+retornada por `then`. Y cuando un controlador arroje una excepción, esto
+automáticamente hace que la promesa producida por su llamada `then` sea
+rechazada. Entonces, si cualquier elemento en una cadena de acciones
+asíncronas falla, el resultado de toda la cadena se marca como rechazado, y no
+se llaman más manejadores despues del punto en donde falló.
 
 {{index "Promise.reject function", "Promise class"}}
 
-Much like resolving a promise provides a value, rejecting one also
-provides one, usually called the _reason_ of the rejection. When an
-exception in a handler function causes the rejection, the exception
-value is used as the reason. Similarly, when a handler returns a
-promise that is rejected, that rejection flows into the next promise.
-There's a `Promise.reject` function that creates a new,
-immediately rejected promise.
+Al igual que resolver una promesa proporciona un valor, rechazar una también
+proporciona uno, generalmente llamado la _razón_ el rechazo. Cuando una
+excepción en una función de controlador provoca el rechazo, el valor de
+la excepción se usa como la razón. Del mismo modo, cuando un controlador retorna
+una promesa que es rechazada, ese rechazo fluye hacia la próxima promesa.
+Hay una función `Promise.reject` que crea una nueva promesa
+inmediatamente rechazada.
 
 {{index "catch method"}}
 
-To explicitly handle such rejections, promises have a `catch` method
-that registers a handler to be called when the promise is rejected,
-similar to how `then` handlers handle normal resolution. It's also very
-much like `then` in that it returns a new promise, which resolves to
-the original promise's value if it resolves normally, and to the
-result of the `catch` handler otherwise. If a `catch` handler throws
-an error, the new promise is also rejected.
+Para manejar explícitamente tales rechazos, las promesas tienen un método
+`catch` ("atraoar") que registra un controlador para que sea llamado cuando se rechaze la
+promesa, similar a cómo los manejadores `then` manejan la resolución normal.
+También es muy parecido a `then` en que retorna una nueva promesa, que se
+resuelve en el valor de la promesa original si esta se resuelve normalmente, y al
+resultado del controlador `catch` de lo contrario. Si un controlador `catch`
+lanza un error, la nueva promesa también es rechazada.
 
 {{index "then method"}}
 
-As a shorthand, `then` also accepts a rejection handler as second
-argument, so you can install both types of handlers in a single method
-call.
+Como una abreviatura, `then` también acepta un manejador de rechazo como
+segundo argumento, por lo que puedes instalar ambos tipos de controladores en
+un solo método de llamada.
 
-A function passed to the `Promise` constructor receives a second
-argument, alongside the resolve function, which it can use to reject
-the new promise.
+Una función que se pasa al constructor `Promise` recibe un segundo
+argumento, junto con la función de resolución, que puede usar para rechazar
+la nueva promesa.
 
-The chains of promise values created by calls to `then` and `catch`
-can be seen as a pipeline through which asynchronous values or
-failures move. Since such chains are created by registering handlers,
-each link has a success handler or a rejection handler (or both)
-associated with it. Handlers that don't match the type of outcome
-(success or failure) are ignored. But those that do match are called,
-and their outcome determines what kind of value comes next—success
-when it returns a non-promise value, rejection when it throws an
-exception, and the outcome of a promise when it returns one of those.
+Las cadenas de promesas creadas por llamadas a `then` y `catch`
+puede verse como una tubería a través de la cual los valores asíncronicos o
+las fallas se mueven. Dado que tales cadenas se crean mediante el registro de
+controladores, cada enlace tiene un controlador de éxito o un controlador de
+rechazo (o ambos) asociados a ello. Controladores que no coinciden con ese tipo
+de resultados (éxito o fracaso) son ignorados. Pero los que sí coinciden son
+llamados, y su resultado determina qué tipo de valor viene después—éxito
+cuando retorna un valor que no es una promesa, rechazo cuando arroja una
+excepción, y el resultado de una promesa cuando retorna una de esas.
 
 {{index "uncaught exception", "exception handling"}}
 
-Much like an uncaught exception is handled by the environment,
-JavaScript environments can detect when a promise rejection isn't
-handled, and will report this as an error.
+Al igual que una excepción no detectada es manejada por el entorno,
+Los entornos de JavaScript pueden detectar cuándo una promesa rechazada no es
+manejada, y reportará esto como un error.
 
-## Networks are hard
+## Las redes son difíciles
 
 {{index network}}
 
-Occasionally, there isn't enough light for the ((crow))s' mirror
-systems to transmit a signal, or something is blocking the path of the
-signal. It is possible for a signal to be sent, but never received.
+Ocasionalmente, no hay suficiente luz para los sistemas de espejos de los
+cuervos para transmitir una señal, o algo bloquea el camino de la
+señal. Es posible que se envíe una señal, pero que nunca se reciba.
 
 {{index "send method", error, timeout}}
 
-As it is, that will just cause the callback given to `send` to never
-be called, which will probably cause the program to stop without even
-noticing there is a problem. It would be nice if, after a given period
-of not getting a response, a request would _time out_ and report
-failure.
+Tal y como es, eso solo causará que la devolución de llamada dada a `send` nunca
+sea llamada, lo que probablemente hará que el programa se detenga sin siquiera
+notar que hay un problema. Sería bueno si, después de un determinado período
+de no obtener una respuesta, una solicitud _expirará_ e informara de un
+fracaso.
 
-Often, transmission failures are random accidents, like a car's
-headlight interfering with the light signals, and simply retrying the
-request may cause it to succeed. So while we're at it, let's make our
-request function automatically retry the sending of the request a few
-times before it gives up.
+A menudo, las fallas de transmisión son accidentes aleatorios, como la
+luz del faro de un auto interfieriendo con las señales de luz, y simplemente
+volver a intentar la solicitud puede hacer que esta tenga éxito. Entonces,
+mientras estamos en eso, hagamos que nuestra función de solicitud
+automáticamente reintente el envío de la solicitud momentos antes de que se de
+por vencida.
 
 {{index "Promise class", "callback function", interface}}
 
-And, since we've established that promises are a good thing, we'll
-also make our request function return a promise. In terms of what they
-can express, callbacks and promises are equivalent. Callback-based
-functions can be wrapped to expose a promise-based interface, and
-vice versa.
+Y, como hemos establecido que las promesas son algo bueno, tambien haremos
+que nuestra función de solicitud retorne una promesa. En
+términos de lo que pueden expresar, las devoluciones de llamada y las promesas
+son equivalentes. Las funciones basadas en devoluciones de llamadas se pueden
+envolver para exponer una interfaz basada en promesas, y viceversa.
 
-Even when a ((request)) and its ((response)) are successfully
-delivered, the response may indicate failure—for example, if the
-request tries to use a request type that hasn't been defined or the
-handler throws an error. To support this, `send` and
-`definirTipoSolicitud` follow the convention mentioned before, where the
-first argument passed to callbacks is the failure reason, if any, and
-the second is the actual result.
+Incluso cuando una ((solicitud)) y su ((respuesta)) sean entregadas
+exitosamente, la respuesta puede indicar un error—por ejemplo, si la
+solicitud intenta utilizar un tipo de solicitud que no haya sido definida
+o si el controlador genera un error. Para soportar esto, `send` y
+`definirTipoSolicitud` siguen la convención mencionada anteriormente, donde
+el primer argumento pasado a las devoluciones de llamada es el motivo del
+fallo, si lo hay, y el segundo es el resultado real.
 
-These can be translated to promise resolution and rejection by our
-wrapper.
+Estos pueden ser traducidos para prometer resolución y rechazo por parte de
+nuestra envoltura.
 
 {{index "Timeout class", "request function", retry}}
 
 ```{includeCode: true}
-class Timeout extends Error {}
+class TiempoDeEspera extends Error {}
 
-function request(nest, target, type, contenido) {
+function request(nido, objetivo, tipo, contenido) {
   return new Promise((resolve, reject) => {
-    let done = false;
-    function attempt(n) {
-      nest.send(target, type, content, (failed, value) => {
-        done = true;
-        if (failed) reject(failed);
+    let listo = false;
+    function intentar(n) {
+      nido.send(objetivo, tipo, contenido, (fallo, value) => {
+        listo = true;
+        if (fallo) reject(fallo);
         else resolve(value);
       });
       setTimeout(() => {
-        if (done) return;
-        else if (n < 3) attempt(n + 1);
-        else reject(new Timeout("Timed out"));
+        if (listo) return;
+        else if (n < 3) intentar(n + 1);
+        else reject(new TiempoDeEspera("Tiempo de espera agotado"));
       }, 250);
     }
-    attempt(1);
+    intentar(1);
   });
 }
 ```
 
 {{index "Promise class", "resolving (a promise)", "rejecting (a promise)"}}
 
-Because promises can only be resolved (or rejected) once, this will
-work. The first time `resolve` or `reject` is called determines the
-outcome of the promise, and any further calls, such as the timeout
-arriving after the request finishes, or a request coming back after
-another request finished, are ignored.
+Debido a que las promesas solo se pueden resolver (o rechazar) una vez, esto
+funcionara. La primera vez que se llame a `resolve` o `reject` se determinara el
+resultado de la promesa y cualquier llamada subsecuente, como el tiempo de espera
+que llega después de que finaliza la solicitud, o una solicitud que regresa
+después de que otra solicitud es finalizada, es ignorada.
 
 {{index recursion}}
 
-To build an asynchronous ((loop)), for the retries, we need to use a
-recursive function—a regular loop doesn't allow us to stop and wait
-for an asynchronous action. The `attempt` function makes a single
-attempt to send a request. It also sets a timeout that, if no response
-has come back after 250 milliseconds, either starts the next attempt
-or, if this was the fourth attempt, rejects the promise with an
-instance of `Timeout` as the reason.
+Para construir un ((ciclo)) asincrónico, para los reintentos, necesitamos usar
+un función recursiva—un ciclo regular no nos permite detenernos y esperar
+por una acción asincrónica. La función `intentar` hace un solo
+intento de enviar una solicitud. También establece un tiempo de espera que, si
+no ha regresado una respuesta después de 250 milisegundos, comienza el
+próximo intento o, si este es el cuarto intento, rechaza la promesa con una
+instancia de `TiempoDeEspera` como la razón.
 
 {{index idempotence}}
 
-Retrying every quarter second and giving up when no response has come
-in after a second is definitely somewhat arbitrary. It is even
-possible, if the request did come through but the handler is just
-taking a bit longer, for requests to be delivered multiple times.
-We'll write our handlers with that problem in mind—duplicate messages
-should be harmless.
+Volver a intentar cada cuarto de segundo y rendirse cuando no ha
+llegado ninguna respuesta después de un segundo es algo definitivamente
+arbitrario. Es incluso posible, si la solicitud llegó pero el controlador se
+esta tardando un poco más, que las solicitudes se entreguen varias veces.
+Escribiremos nuestros manejadores con ese problema en mente—los mensajes
+duplicados deberían de ser inofensivos.
 
-In general, we will not be building a world-class, robust network
-today. But that's okay—crows don't have very high expectations yet
-when it comes to computing.
+En general, no construiremos una red robusta de clase mundial
+hoy. Pero eso esta bien—los cuervos no tienen expectativas muy altas todavía
+cuando se trata de la computación.
 
 {{index "definirTipoSolicitud function", "requestType function"}}
 
-To isolate ourselves from callbacks altogether, we'll go ahead and
-also define a wrapper for `definirTipoSolicitud` that allows the handler
-function to return a promise or plain value, and wires that up to the
-callback for us.
+Para aislarnos por completo de las devoluciones de llamadas, seguiremos
+adelante y también definiremos un contenedor para `definirTipoSolicitud` que
+permite que la función controlador pueda retornar una promesa o valor normal,
+y envia eso hasta la devolución de llamada para nosotros.
 
 ```{includeCode: true}
-function requestType(name, handler) {
-  definirTipoSolicitud(name, (nest, content, fuente,
-                           callback) => {
+function tipoSolicitud(nombre, manejador) {
+  definirTipoSolicitud(nombre, (nido, contenido, fuente,
+                           devolucionDeLlamada) => {
     try {
-      Promise.resolve(handler(nest, content, source))
-        .then(response => callback(null, response),
-              failure => callback(failure));
+      Promise.resolve(manejador(nido, contenido, fuente))
+        .then(response => devolucionDeLlamada(null, response),
+              failure => devolucionDeLlamada(failure));
     } catch (exception) {
-      callback(exception);
+      devolucionDeLlamada(exception);
     }
   });
 }
@@ -559,228 +563,231 @@ function requestType(name, handler) {
 
 {{index "Promise.resolve function"}}
 
-`Promise.resolve` is used to convert the value returned by `handler`
-to a promise if it isn't already.
+`Promise.resolve` se usa para convertir el valor retornado por `manejador`
+a una promesa si no es una ya.
 
 {{index "try keyword", "callback function"}}
 
-Note that the call to `handler` had to be wrapped in a `try` block, to
-make sure any exception it raises directly is given to the callback.
-This nicely illustrates the difficulty of properly handling errors
-with raw callbacks—it is very easy to forget to properly route
-exceptions like that, and if you don't do it, failures won't get
-reported to the right callback. Promises make this mostly automatic,
-and thus less error-prone.
+Ten en cuenta que la llamada a `manejador` tenía que estar envuelta en un
+bloque `try`, para asegurarse de que cualquier excepción que aparezca  
+directamente se le dé a la devolución de llamada. Esto ilustra muy bien la
+dificultad de manejar adecuadamente los errores con devoluciones de llamada
+crudas—es muy fácil olvidarse de encaminar correctamente excepciones como esa,
+y si no lo haces, las fallas no se seran informadas a la devolución de
+llamada correcta. Las promesas hacen esto casi automático, y por lo
+tanto, son menos propensas a errores.
 
-## Collections of promises
+## Colecciones de promesas
 
 {{index "neighbors property", "ping request"}}
 
-Each nest computer keeps an array of other nests within transmission
-distance in its `neighbors` property. To check which of those are
-currently reachable, you could write a function that tries to send a
-`"ping"` request (a request that simply asks for a response) to each
-of them, and see which ones come back.
+Cada computadora nido mantiene un array de otros nidos dentro de la distancia
+de transmisión en su propiedad `vecinos`. Para verificar cuáles de
+esos son actualmente accesibles, puede escribir una función que intente enviar
+un solicitud `"ping"` (una solicitud que simplemente pregunta por una respuesta)
+para cada de ellos, y ver cuáles regresan.
 
 {{index "Promise.all function"}}
 
-When working with collections of promises running at the same time,
-the `Promise.all` function can be useful. It returns a promise that
-waits for all of the promises in the array to resolve, and then
-resolves to an array of the values that these promises produced (in
-the same order as the original array). If any promise is rejected, the
-result of `Promise.all` is itself rejected.
+Al trabajar con colecciones de promesas que se ejecutan al mismo tiempo,
+la función `Promise.all` puede ser útil. Esta retorna una promesa que
+espera a que se resuelvan todas las promesas del array, y luego
+resuelve un array de los valores que estas promesas produjeron (en
+el mismo orden que en el array original). Si alguna promesa es rechazada, el
+el resultado de `Promise.all` es en sí mismo rechazado.
 
 ```{includeCode: true}
-requestType("ping", () => "pong");
+tipoSolicitud("ping", () => "pong");
 
-function availableNeighbors(nest) {
-  let requests = nest.neighbors.map(neighbor => {
-    return request(nest, neighbor, "ping")
+function vecinosDisponibles(nido) {
+  let solicitudes = nido.vecinos.map(vecino => {
+    return request(nido, vecino, "ping")
       .then(() => true, () => false);
   });
-  return Promise.all(requests).then(result => {
-    return nest.neighbors.filter((_, i) => result[i]);
+  return Promise.all(solicitudes).then(resultado => {
+    return nido.vecinos.filter((_, i) => resultado[i]);
   });
 }
 ```
 
 {{index "then method"}}
 
-When a neighbor isn't available, we don't want the entire combined
-promise to fail, since then we still wouldn't know anything. So the
-function that is mapped over the set of neighbors to turn them into
-request promises attaches handlers that make successful requests
-produce `true` and rejected ones produce `false`.
+Cuando un vecino no este disponible, no queremos que todo la promesa combinada
+falle, dado que entonces no sabríamos nada. Entonces la función
+que es mappeada en el conjunto de vecinos para convertirlos en
+promesas de solicitud vincula a los controladores que hacen las
+solicitudes exitosas produzcan `true` y las rechazadas produzcan `false`.
 
 {{index "filter method", "map method", "some method"}}
 
-In the handler for the combined promise, `filter` is used to remove
-those elements from the `neighbors` array whose corresponding value is
-false. This makes use of the fact that `filter` passes the array index
-of the current element as a second argument to its filtering function
-(`map`, `some`, and similar higher-order array methods do the same).
+En el controlador de la promesa combinada, `filter` se usa para eliminar
+esos elementos de la matriz `vecinos` cuyo valor correspondiente es
+falso. Esto hace uso del hecho de que `filter` pasa el índice de matriz
+del elemento actual como segundo argumento para su función de filtrado
+(`map`,` some`, y métodos similares de orden superior de arrays hacen lo
+mismo).
 
-## Network flooding
+## Inundación de red
 
-The fact that nests can only talk to their neighbors greatly inhibits
-the usefulness of this network.
+El hecho de que los nidos solo pueden hablar con sus vecinos inhibe en gran
+cantidad la utilidad de esta red.
 
-For broadcasting information to the whole network, one solution is to
-set up a type of request that is automatically forwarded to neighbors.
-These neighbors then in turn forward it to their neighbors, until the
-whole network has received the message.
+Para transmitir información a toda la red, una solución es configurar un tipo
+de solicitud que sea reenviada automáticamente a los vecinos. Estos vecinos
+luego la envían a sus vecinos, hasta que toda la red ha recibido el mensaje.
 
 {{index "sendGossip function"}}
 
 ```{includeCode: true}
-import {everywhere} from "./crow-tech";
+import {todosLados} from "./tecnologia-cuervo";
 
-everywhere(nest => {
-  nest.state.gossip = [];
+todosLados(nido => {
+  nido.estado.chismorreo = [];
 });
 
-function sendGossip(nest, message, exceptFor = null) {
-  nest.state.gossip.push(message);
-  for (let neighbor of nest.neighbors) {
-    if (neighbor == exceptFor) continue;
-    request(nest, neighbor, "gossip", message);
+function enviarChismorreo(nido, mensaje, exceptoPor = null) {
+  nido.estado.chismorreo.push(mensaje);
+  for (let vecino of nido.vecinos) {
+    if (vecino == exceptoPor) continue;
+    request(nido, vecino, "chismorreo", mensaje);
   }
 }
 
-requestType("gossip", (nest, message, source) => {
-  if (nest.state.gossip.includes(message)) return;
-  console.log(`${nest.name} received gossip '${
-               message}' from ${source}`);
-  sendGossip(nest, message, source);
+requestType("chismorreo", (nido, mensaje, fuente) => {
+  if (nido.estado.chismorreo.includes(mensaje)) return;
+  console.log(`${nido.nombre} recibio chismorreo '${
+               mensaje}' de ${fuente}`);
+  enviarChismorreo(nido, mensaje, fuente);
 });
 ```
 
 {{index "everywhere function", "gossip property"}}
 
-To avoid sending the same message around the network forever, each
-nest keeps an array of gossip strings that it has already seen. To
-define this array, we use the `everywhere` function—which runs code on
-every nest—to add a property to the nest's `state` object, which is
-where we'll keep nest-local ((state)).
+Para evitar enviar el mismo mensaje a traves de la red por siempre, cada
+nido mantiene un array de strings de chismorreos que ya ha visto. Para
+definir este array, usaremos la función `todosLados`—que ejecuta
+código en todos los nidos—para añadir una propiedad al objeto `estado` del nido,
+que es donde mantendremos ((estado)) local del nido.
 
-When a nest receives a duplicate gossip message, which is very likely
-to happen with everybody blindly resending these, it ignores it. But
-when it receives a new message, it excitedly tells all its neighbors
-except for the one who sent it the message.
+Cuando un nido recibe un mensaje de chisme duplicado, lo cual es muy probable
+que suceda con todo el mundo reenviando estos a ciegas, lo ignora. Pero
+cuando recibe un mensaje nuevo, emocionadamente le dice a todos sus vecinos
+a excepción de quien le envió el mensaje.
 
-This will cause a new piece of gossip to spread through the network
-like an ink stain in water. Even when some connections aren't
-currently working, if there is an alternative route to a given nest,
-the gossip will reach it through there.
+Esto provocará que una nueva pieza de chismes se propague a través de la red
+como una mancha de tinta en agua. Incluso cuando algunas conexiones no estan
+trabajando actualmente, si hay una ruta alternativa a un nido dado,
+el chisme llegará hasta allí.
 
 {{index "flooding"}}
 
-This style of network communication is called _flooding_—it floods the
-network with a piece of information until all nodes have it.
+Este estilo de comunicación de red se llama _inundamiento_-inunda la
+red con una pieza de información hasta que todos los nodos la tengan.
 
 {{if interactive
 
-We can call `sendGossip` to see a message flow through the village.
+Podemos llamar a `enviarChismorreo` para ver un mensaje fluir a través del
+pueblo.
 
 ```
-sendGossip(granRoble, "Kids with airgun in the park");
+enviarChismorreo(granRoble, "Niños con una pistola de aire en el parque");
 ```
 
 if}}
 
-## Message routing
+## Enrutamiento de mensajes
 
 {{index efficiency}}
 
-If a given node wants to talk to a single other node, flooding is not
-a very efficient approach. Especially when the network is big, that
-would lead to a lot of useless data transfers.
+Si un nodo determinado quiere hablar unicamente con otro nodo, la inundación no
+es un enfoque muy eficiente. Especialmente cuando la red es grande,
+daría lugar a una gran cantidad de transferencias de datos inútiles.
 
 {{index "routing"}}
 
-An alternative approach is to set up a way for messages to hop from
-node to node, until they reach their destination. The difficulty with
-that is that it requires knowledge about the layout of the network. To
-send a request in the direction of a faraway nest, it is necessary to
-know which neighboring nest gets it closer to its destination. Sending
-it in the wrong direction will not do much good.
+Un enfoque alternativo es configurar una manera en que los mensajes salten de
+nodo a nodo, hasta que lleguen a su destino. La dificultad con eso
+es que requiere de conocimiento sobre el diseño de la red. Para
+enviar una solicitud hacia la dirección de un nido lejano, es necesario
+saber qué nido vecino lo acerca más a su destino. Enviar la solicitud
+en la dirección equivocada no servirá de mucho.
 
-Since each nest only knows about its direct neighbors, it doesn't have
-the information it needs to compute a route. We must somehow spread
-the information about these connections to all nests. Preferably in a
-way that allows it to change over time, when nests are abandoned or
-new nests are built.
+Dado que cada nido solo conoce a sus vecinos directos, no tiene
+la información que necesita para calcular una ruta. De alguna manera debemos
+extender la información acerca de estas conexiones a todos los nidos.
+Preferiblemente en una manera que permita ser cambiada con el tiempo, cuando
+los nidos son abandonados o nuevos nidos son construidos.
 
 {{index flooding}}
 
-We can use flooding again, but instead of checking whether a given
-message has already been received, we now check whether the new set of
-neighbors for a given nest matches the current set we have for it.
+Podemos usar la inundación de nuevo, pero en lugar de verificar si un
+determinado mensaje ya ha sido recibido, ahora verificamos si el nuevo conjunto
+de vecinos de un nido determinado coinciden con el conjunto actual que
+tenemos para él.
 
 {{index "broadcastConnections function", "connections binding"}}
 
 ```{includeCode: true}
-requestType("connections", (nest, {name, neighbors},
-                            source) => {
-  let connections = nest.state.connections;
-  if (JSON.stringify(connections.get(name)) ==
-      JSON.stringify(neighbors)) return;
-  connections.set(name, neighbors);
-  broadcastConnections(nest, name, source);
+tipoSolicitud("conexiones", (nido, {nombre, vecinos},
+                            fuente) => {
+  let conexiones = nido.estado.conexiones;
+  if (JSON.stringify(conexiones.get(nombre)) ==
+      JSON.stringify(vecinos)) return;
+  conexiones.set(nombre, vecinos);
+  difundirConexiones(nido, nombre, fuente);
 });
 
-function broadcastConnections(nest, name, exceptFor = null) {
-  for (let neighbor of nest.neighbors) {
-    if (neighbor == exceptFor) continue;
-    request(nest, neighbor, "connections", {
-      name,
-      neighbors: nest.state.connections.get(name)
+function difundirConexiones(nido, nombre, exceptoPor = null) {
+  for (let vecino of nido.vecinos) {
+    if (vecino == exceptoPor) continue;
+    solicitud(nido, vecino, "conexiones", {
+      nombre,
+      vecinos: nido.estado.conexiones.get(nombre)
     });
   }
 }
 
-everywhere(nest => {
-  nest.state.connections = new Map;
-  nest.state.connections.set(nest.name, nest.neighbors);
-  broadcastConnections(nest, nest.name);
+todosLados(nido => {
+  nido.estado.conexiones = new Map;
+  nido.estado.conexiones.set(nido.nombre, nido.vecinos);
+  difundirConexiones(nido, nido.nombre);
 });
 ```
 
 {{index JSON, "== operator"}}
 
-The comparison uses `JSON.stringify` because `==`, on objects or
-arrays, will only return true when the two are the exact same value,
-which is not what we need here. Comparing the JSON strings is a crude
-but effective way to compare their content.
+La comparación usa `JSON.stringify` porque `==`, en objetos o
+arrays, solo retornara true cuando los dos tengan exactamente el mismo valor,
+lo cual no es lo que necesitamos aquí. Comparar los strings JSON es una
+cruda pero efectiva manera de comparar su contenido.
 
-The nodes immediately start broadcasting their connections, which
-should, unless some nests are completely unreachable, quickly give
-every nest a map of the current network ((graph)).
+Los nodos comienzan inmediatamente a transmitir sus conexiones, lo que
+debería, a menos que algunos nidos sean completamente inalcanzables, dar
+rápidamente cada nido un mapa del ((grafo)) de la red actual.
 
 {{index pathfinding}}
 
-A thing you can do with graphs is find routes in them, as we saw in
-[Chapter ?](robot). If we have a route towards a message's
-destination, we know which direction to send it in.
+Una cosa que puedes hacer con grafos es encontrar rutas en ellos, como vimos
+en el [Capítulo 7](Robot). Si tenemos una ruta hacia el destino de un mensaje,
+sabemos en qué dirección enviarlo.
 
 {{index "findRoute function"}}
 
-This `findRoute` function, which greatly resembles the `findRoute`
-from [Chapter ?](robot#findRoute), searches for a way to reach a given
-node in the network. But instead of returning the whole route, it just
-returns the next step. That next nest will itself, using its current
-information about the network, decide where _it_ sends the message.
+Esta función `encontrarRuta`, que se parece mucho a `encontrarRuta`
+del [Capítulo 7](robot#findRoute), busca por una forma de llegar a un determinado
+nodo en la red. Pero en lugar de devolver toda la ruta, simplemente
+retorna el siguiente paso. Ese próximo nido en si mismo, usando su información
+actual sobre la red, decididira _hacia_ dónde enviar el mensaje.
 
 ```{includeCode: true}
-function findRoute(from, to, connections) {
-  let work = [{at: from, via: null}];
-  for (let i = 0; i < work.length; i++) {
-    let {at, via} = work[i];
-    for (let next of connections.get(at) || []) {
-      if (next == to) return via;
-      if (!work.some(w => w.at == next)) {
-        work.push({at: next, via: via || next});
+function encontrarRuta(desde, hasta, conexiones) {
+  let trabajo = [{donde: desde, via: null}];
+  for (let i = 0; i < trabajo.length; i++) {
+    let {donde, via} = trabajo[i];
+    for (let siguiente of conexiones.get(donde) || []) {
+      if (siguiente == hasta) return via;
+      if (!trabajo.some(w => w.donde == siguiente)) {
+        trabajo.push({donde: siguiente, via: via || siguiente});
       }
     }
   }
@@ -788,166 +795,165 @@ function findRoute(from, to, connections) {
 }
 ```
 
-Now we can build a function that can send long-distance messages. If
-the message is addressed to a direct neighbor, it is delivered as
-usual. If not, it is packaged in an object and sent to a neighbor that
-is closer to the target, using the `"route"` request type, which will
-cause that neighbor to repeat the same behavior.
+Ahora podemos construir una función que pueda enviar mensajes de larga distancia.
+Si el mensaje está dirigido a un vecino directo, se entrega normalmente.
+Si no, se empaqueta en un objeto y se envía a un vecino que
+este más cerca del objetivo, usando el tipo de solicitud `"ruta"`, que
+hace que ese vecino repita el mismo comportamiento.
 
 {{index "routeRequest function"}}
 
 ```{includeCode: true}
-function routeRequest(nest, target, type, content) {
-  if (nest.neighbors.includes(target)) {
-    return request(nest, target, type, content);
+function solicitudRuta(nido, objetivo, tipo, contenido) {
+  if (nido.vecinos.includes(objetivo)) {
+    return solicitud(nido, objetivo, tipo, contenido);
   } else {
-    let via = findRoute(nest.name, target,
-                        nest.state.connections);
-    if (!via) throw new Error(`No route to ${target}`);
-    return request(nest, via, "route",
-                   {target, type, content});
+    let via = encontrarRuta(nido.nombre, objetivo,
+                        nido.estado.conexiones);
+    if (!via) throw new Error(`No hay rutas disponibles hacia ${objetivo}`);
+    return solicitud(nido, via, "ruta",
+                   {objetivo, tipo, contenido});
   }
 }
 
-requestType("route", (nest, {target, type, content}) => {
-  return routeRequest(nest, target, type, content);
+tipoSolicitud("ruta", (nido, {objetivo, tipo, contenido}) => {
+  return solicitudRuta(nido, objetivo, tipo, contenido);
 });
 ```
 
 {{if interactive
 
-We can now send a message to the nest in the church tower, which is
-four network hops removed.
+Ahora podemos enviar un mensaje al nido en la torre de la iglesia, que esta
+a cuatro saltos de red de distancia.
 
 ```
-routeRequest(granRoble, "Church Tower", "note",
-             "Incoming jackdaws!");
+solicitudRuta(granRoble, "Torre de la Iglesia", "nota",
+             "Cuidado con las Palomas!");
 ```
 
 if}}
 
 {{index "[network, stack]"}}
 
-We've constructed several ((layer))s of functionality on top of a
-primitive communication system in order to make it convenient to use.
-This is a nice (though simplified) model of how real computer networks
-work.
+Hemos construido varias ((capas)) de funcionalidad sobre un
+sistema de comunicación primitivo para que sea conveniente de usarlo.
+Este es un buen (aunque simplificado) modelo de cómo las redes de computadoras
+reales trabajan.
 
 {{index error}}
 
-A distinguishing property of computer networks is that they aren't
-reliable—abstractions built on top of them can help, but you can't
-abstract away network failure. So network programming is typically
-very much about anticipating and dealing with failures.
+Una propiedad distintiva de las redes de computadoras es que no son confiables—las
+abstracciones construidas encima de ellas pueden ayudar, pero no se puede
+abstraer la falla de una falla de red. Entonces la programación de redes es
+típicamente mucho acerca de anticipar y lidiar con fallas.
 
-## Async functions
+## Funciones asíncronas
 
-To store important information, ((crow))s are known to duplicate it
-across nests. That way, when a hawk destroys a nest, the information
-isn't lost.
+Para almacenar información importante, se sabe que los ((cuervo))s la duplican
+a través de los nidos. De esta forma, cuando un halcón destruye un nido, la
+información no se pierde.
 
-To retrieve a given piece of information that it doesn't have in its
-own storage bulb, a nest computer might consult random other nests in
-the network until it finds one that has it.
+Para obtener una pieza de información dada que no este en su propia bulbo de
+almacenamiento, una computadora nido puede consultar otros nidos al azar en
+la red hasta que encuentre uno que la tenga.
 
 {{index "findInStorage function", "network function"}}
 
 ```{includeCode: true}
-requestType("storage", (nest, name) => storage(nest, name));
+tipoSolicitud("almacenamiento", (nido, nombre) => almacenamiento(nido, nombre));
 
-function findInStorage(nest, name) {
-  return storage(nest, name).then(found => {
-    if (found != null) return found;
-    else return findInRemoteStorage(nest, name);
+function encontrarEnAlmacenamiento(nido, nombre) {
+  return almacenamiento(nido, nombre).then(encontrado => {
+    if (encontrado != null) return encontrado;
+    else return encontrarEnAlmacenamientoRemoto(nido, nombre);
   });
 }
 
-function network(nest) {
-  return Array.from(nest.state.connections.keys());
+function red(nido) {
+  return Array.from(nido.estado.conexiones.keys());
 }
 
-function findInRemoteStorage(nest, name) {
-  let sources = network(nest).filter(n => n != nest.name);
-  function next() {
-    if (sources.length == 0) {
-      return Promise.reject(new Error("Not found"));
+function encontrarEnAlmacenamientoRemoto(nido, nombre) {
+  let fuentes = red(nido).filter(n => n != nido.nombre);
+  function siguiente() {
+    if (fuentes.length == 0) {
+      return Promise.reject(new Error("No encontrado"));
     } else {
-      let source = sources[Math.floor(Math.random() *
-                                      sources.length)];
-      sources = sources.filter(n => n != source);
-      return routeRequest(nest, source, "storage", name)
-        .then(value => value != null ? value : next(),
-              next);
+      let fuente = fuentes[Math.floor(Math.random() *
+                                      fuentes.length)];
+      fuentes = fuentes.filter(n => n != fuente);
+      return solicitudRuta(nido, fuente, "almacenamiento", nombre)
+        .then(valor => valor != null ? valor : siguiente(),
+              siguiente);
     }
   }
-  return next();
+  return siguiente();
 }
 ```
 
 {{index "Map class", "Object.keys function", "Array.from function"}}
 
-Because `connections` is a `Map`, `Object.keys` doesn't work on it. It
-has a `keys` _method_, but that returns an iterator rather than an
-array. An iterator (or iterable value) can be converted to an array
-with the `Array.from` function.
+Como `conexiones` es un `Map`, `Object.keys` no funciona en él. Este
+tiene un _metódo_ `keys`, pero que retorna un iterador en lugar de un
+array. Un iterador (o valor iterable) se puede convertir a un array
+con la función `Array.from`.
 
 {{index "Promise class", recursion}}
 
-Even with promises this is some rather awkward code. Multiple
-asynchronous actions are chained together in non-obvious ways. We
-again need a recursive function (`next`) to model looping through the
-nests.
+Incluso con promesas, este es un código bastante incómodo. Múltiples
+acciones asincrónicas están encadenadas juntas de maneras no-obvias. Nosotros
+de nuevo necesitamos una función recursiva (`siguiente`) para modelar ciclos
+a través de nidos.
 
 {{index "synchronous programming", "asynchronous programming"}}
 
-And the thing the code actually does is completely linear—it always
-waits for the previous action to complete before starting the next
-one. In a synchronous programming model, it'd be simpler to express.
+Y lo que el código realmente hace es completamente lineal—siempre
+espera a que se complete la acción anterior antes de comenzar la siguiente.
+En un modelo de programación sincrónica, sería más simple de expresar.
 
 {{index "async function", "await keyword"}}
 
-The good news is that JavaScript allows you write pseudo-synchronous
-code. An `async` function is a function that implicitly returns a
-promise and that can, in its body, `await` other promises in a way
-that _looks_ synchronous.
+La buena noticia es que JavaScript te permite escribir código pseudo-sincrónico.
+Una función `async` es una función que retorna implícitamente una
+promesa y que puede, en su cuerpo, `await` ("esperar") otras promesas de una
+manera que _se ve_ sincrónica.
 
 {{index "findInStorage function"}}
 
-We can rewrite `findInStorage` like this:
+Podemos reescribir `encontrarEnAlmacenamiento` de esta manera:
 
 ```
-async function findInStorage(nest, name) {
-  let local = await storage(nest, name);
+async function encontrarEnAlmacenamiento(nido, nombre) {
+  let local = await almacenamiento(nido, nombre);
   if (local != null) return local;
 
-  let sources = network(nest).filter(n => n != nest.name);
-  while (sources.length > 0) {
-    let source = sources[Math.floor(Math.random() *
-                                    sources.length)];
-    sources = sources.filter(n => n != source);
+  let fuentes = red(nido).filter(n => n != nido.nombre);
+  while (fuentes.length > 0) {
+    let fuente = fuentes[Math.floor(Math.random() *
+                                    fuentes.length)];
+    fuentes = fuentes.filter(n => n != fuente);
     try {
-      let found = await routeRequest(nest, source, "storage",
-                                     name);
-      if (found != null) return found;
+      let encontrado = await solicitudRuta(nido, fuente, "almacenamiento",
+                                     nombre);
+      if (encontrado != null) return encontrado;
     } catch (_) {}
   }
-  throw new Error("Not found");
+  throw new Error("No encontrado");
 }
 ```
 
 {{index "async function", "return keyword", "exception handling"}}
 
-An `async` function is marked by the word `async` before the
-`function` keyword. Methods can also be made `async` by writing
-`async` before their name. When such a function or method is called,
-it returns a promise. As soon as the body returns something, that
-promise is resolved. If it throws an exception, the promise is
-rejected.
+Una función `async` está marcada por la palabra `async` antes de la
+palabra clave `function`. Los métodos también pueden hacerse `async`
+al escribir `async` antes de su nombre. Cuando se llame a dicha función o método,
+este retorna una promesa. Tan pronto como el cuerpo retorne algo, esa
+promesa es resuelta Si arroja una excepción, la promesa es rechazada.
 
 {{if interactive
 
 ```{startCode: true}
-findInStorage(granRoble, "events on 2017-12-21")
+encontrarEnAlmacenamiento(granRoble, "eventos del 2017-12-21")
   .then(console.log);
 ```
 
@@ -955,19 +961,19 @@ if}}
 
 {{index "await keyword", "control flow"}}
 
-Inside an `async` function, the word `await` can be put in front of an
-expression to wait for a promise to resolve, and only then continue
-the execution of the function.
+Dentro de una función `async`, la palabra `await` se puede poner delante de una
+expresión para esperar a que se resuelva una promesa, y solo entonces continua
+la ejecución de la función.
 
-Such a function no longer, like a regular JavaScript function, runs
-from start to completion in one go. Instead, it can be _frozen_ at any
-point that has an `await`, and resumed at a later time.
+Tal función ya no se ejecuta, como una función regular de JavaScript
+de principio a fin de una sola vez. En su lugar, puede ser _congelada_ en
+cualquier punto que tenga un `await`, y se reanuda en un momento posterior.
 
-For non-trivial asynchronous code, this notation is usually more
-convenient than directly using promises. Even if you need to do
-something that doesn't fit the synchronous model, such as perform
-multiple actions at the same time, it is easy to combine `await` with
-direct use of promises.
+Para código asincrónico no-trivial, esta notación suele ser más
+conveniente que usar promesas directamente. Incluso si necesitas hacer
+algo que no se ajuste al modelo síncrono, como realizar
+múltiples acciones al mismo tiempo, es fácil combinar `await` con el
+uso directo de promesas.
 
 ## Generators
 
