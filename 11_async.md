@@ -975,30 +975,29 @@ algo que no se ajuste al modelo síncrono, como realizar
 múltiples acciones al mismo tiempo, es fácil combinar `await` con el
 uso directo de promesas.
 
-## Generators
+## Generadores
 
 {{index "async function"}}
 
-This ability of functions to be paused and then resumed again is not
-exclusive to `async` functions. JavaScript also has a feature called
-_((generator))_ functions. These are similar, but without the
-promises.
+Esta capacidad de las funciones para pausar y luego reanudarse nuevamente no es
+exclusiva para las funciones `async`. JavaScript también tiene una caracteristica
+llamada funciones _((generador))_. Estss son similares, pero sin las
+promesas.
 
-When you define a function with `function*` (placing as asterisk after
-the word `function`), it becomes a generator. When you call a
-generator, it returns an ((iterator)), which we already saw in
-[Chapter ?](object).
+Cuando defines una función con `function*` (colocando un asterisco después de
+la palabra `function`), se convierte en un generador. Cuando llamas un
+generador, este retorna un ((iterador)), que ya vimos en el [Capítulo 6](objeto).
 
 ```
-function* powers(n) {
-  for (let current = n;; current *= n) {
-    yield current;
+function* potenciacion(n) {
+  for (let actual = n;; actual *= n) {
+    yield actual;
   }
 }
 
-for (let power of powers(3)) {
-  if (power > 50) break;
-  console.log(power);
+for (let potencia of potenciacion(3)) {
+  if (potencia > 50) break;
+  console.log(potencia);
 }
 // → 3
 // → 9
@@ -1007,76 +1006,75 @@ for (let power of powers(3)) {
 
 {{index "next method", "yield keyword"}}
 
-Initially, when you call `powers`, the function is frozen at its
-start. Every time you call `next` on the iterator, the function runs
-until it hits a `yield` expression, which pauses it and causes the
-yielded value to become the next value produced by the iterator. When
-the function returns (the one in the example never does), the iterator
-is done.
+Inicialmente, cuando llamas a `potenciacion`, la función se congela en su
+comienzo. Cada vez que llames `next` en el iterador, la función se ejecuta
+hasta que encuentre una expresión `yield` ("arrojar"), que la pausa y causa que el
+valor arrojado se convierta en el siguiente valor producido por el iterador.
+Cuando la función retorne (la del ejemplo nunca lo hace), el iterador
+está completo.
 
-Writing iterators is often much easier when you use generator
-functions. The iterator for the group class (from the exercise in
-[Chapter ?](object#group_iterator)) can be written with this
-generator:
+Escribir iteradores es a menudo mucho más fácil cuando usas funciones
+generadoras. El iterador para la clase grupal (del ejercicio en el
+[Capítulo 6](Objeto#group_iterator)) se puede escribir con este
+generador:
 
 {{index "Group class"}}
 
 ```
-Group.prototype[Symbol.iterator] = function*() {
-  for (let i = 0; i < this.members.length; i++) {
-    yield this.members[i];
+Conjunto.prototype[Symbol.iterator] = function*() {
+  for (let i = 0; i < this.miembros.length; i++) {
+    yield this.miembros[i];
   }
 };
 ```
 
 ```{hidden: true, includeCode: true}
-class Group {
-  constructor() { this.members = []; }
-  add(m) { this.members.add(m); }
+class Conjunto {
+  constructor() { this.miembros = []; }
+  añadir(m) { this.miembros.añadir(m); }
 }
 ```
 
-There's no longer a need to create an object to hold the iteration
-((state))—generators automatically save their local state every time
-they yield.
+Ya no es necesario crear un objeto para mantener el estado de la iteración—los
+generadores guardan automáticamente su estado local cada vez ellos arrojen.
 
-Such `yield` expressions may only occur directly in the generator
-function itself and not in an inner function you define inside of it.
-The state a generator saves, when yielding, is only its _local_
-environment and the position where it yielded.
+Dichas expresiones `yield` solo pueden ocurrir directamente en la
+función generadora en sí y no en una función interna que definas dentro de ella.
+El estado que ahorra un generador, cuando arroja, es solo su entorno _local_
+y la posición en la que fue arrojada.
 
 {{index "await keyword"}}
 
-An `async` function is a special type of generator. It produces a
-promise when called, which is resolved when it returns (finishes) and
-rejected when it throws an exception. Whenever it yields (awaits) a
-promise, the result of that promise (value or thrown exception) is the
-result of the `await` expression.
+Una función `async` es un tipo especial de generador. Produce una
+promesa cuando se llama, que se resuelve cuando vuelve (termina) y
+rechaza cuando arroja una excepción. Cuando cede (espera) por una
+promesa, el resultado de esa promesa (valor o excepción lanzada) es el
+resultado de la expresión `await`.
 
-## The event loop
+## El ciclo de evento
 
 {{index "asynchronous programming", scheduling, "event loop", timeline}}
 
-Asynchronous programs are executed piece by piece. Each piece may
-start some actions and schedule code to be executed when the action
-finishes or fails. In between these pieces, the program sits idle,
-waiting for the next action.
+Los programas asincrónicos son ejecutados pieza por pieza. Cada pieza puede
+iniciar algunas acciones y programar código para que se ejecute cuando la
+acción termine o falle. Entre estas piezas, el programa permanece inactivo,
+esperando por la siguiente acción.
 
 {{index "setTimeout function"}}
 
-So callbacks are not directly called by the code that scheduled them.
-If I call `setTimeout` from within a function, that function will have
-returned by the time the callback function is called. And when the
-callback returns, control does not go back to the function that
-scheduled it.
+Por lo tanto, las devoluciones de llamada no son llamadas directamente por el
+código que las programó. Si llamo a `setTimeout` desde adentro de una función,
+esa función habra retornado para el momento en que se llame a la función de
+devolución de llamada. Y cuando la devolución de llamada retorne, el
+control no volvera a la función que la programo.
 
 {{index "Promise class", "catch keyword", "exception handling"}}
 
-Asynchronous behavior happens on its own empty function ((call
-stack)). This is one of the reasons that, without promises, managing
-exceptions across asynchronous code is hard. Since each callback
-starts with a mostly empty stack, your `catch` handlers won't be on
-the stack when they throw an exception.
+El comportamiento asincrónico ocurre en su propia función de ((llamada de
+pila)) vacía. Esta es una de las razones por las cuales, sin promesas, la
+gestión de excepciones en el código asincrónico es dificil. Como cada
+devolución de llamada comienza con una pila en su mayoría vacía, tus
+manejadores `catch` no estarán en la pila cuando lanzen una excepción.
 
 ```
 try {
@@ -1084,212 +1082,212 @@ try {
     throw new Error("Woosh");
   }, 20);
 } catch (_) {
-  // This will not run
-  console.log("Caught!");
+  // Esto no se va a ejecutar
+  console.log("Atrapado!");
 }
 ```
 
 {{index thread, queue}}
 
-No matter how closely together events—such as timeouts or incoming
-requests—happen, a JavaScript environment will only run one program at
-a time. You can think of this as it running a big loop _around_ your
-program, called the _event loop_. When there's nothing to be done,
-that loop is stopped. But as events come in, they are added to a queue,
-and their code is executed one after the other. Because no two things
-run at the same time, slow-running code might delay the handling of
-other events.
+No importa que tan cerca los eventos—como tiempos de espera o solicitudes
+entrantes—sucedan, un entorno de JavaScript solo ejecutará un programa a
+la vez. Puedes pensar en esto como un gran ciclo _alrededor_ de tu
+programa, llamado _ciclo de evento_. Cuando no hay nada que hacer,
+ese bucle está detenido. Pero a medida que los eventos entran, se agregan a una
+cola, y su código se ejecuta uno después del otro. Porque no hay dos cosas
+que se ejecuten al mismo tiempo, código de ejecución lenta puede retrasar
+el manejo de otros eventos.
 
-This example sets a timeout, but then dallies until after the
-timeout's intended point of time, causing the timeout to be late.
+Este ejemplo establece un tiempo de espera, pero luego se retrasa hasta después
+del tiempo de espera previsto, lo que hace que el tiempo de espera este tarde.
 
 ```
-let start = Date.now();
+let comienzo = Date.now();
 setTimeout(() => {
-  console.log("Timeout ran at", Date.now() - start);
+  console.log("Tiempo de espera corrio al ", Date.now() - comienzo);
 }, 20);
-while (Date.now() < start + 50) {}
-console.log("Wasted time until", Date.now() - start);
-// → Wasted time until 50
-// → Timeout ran at 55
+while (Date.now() < comienzo + 50) {}
+console.log("Se desperdicio tiempo hasta el ", Date.now() - comienzo);
+// → Se desperdicio tiempo hasta el 50
+// → Tiempo de espera corrio al 55
 ```
 
 {{index "resolving (a promise)", "rejecting (a promise)", "Promise class"}}
 
-Promises always resolve or reject as a new event. Even if a promise is
-already resolved, waiting for it will cause your callback to run after
-the current script finishes, rather than right away.
+Las promesas siempre se resuelven o rechazan como un nuevo evento. Incluso si
+una promesa ya ha sido resuelta, esperar por ella hará que la devolución de
+llamada se ejecute después de que el script actual termine, en lugar de hacerlo
+inmediatamente.
 
 ```
-Promise.resolve("Done").then(console.log);
-console.log("Me first!");
-// → Me first!
-// → Done
+Promise.resolve("Listo").then(console.log);
+console.log("Yo primero!");
+// → Yo primero!
+// → Listo
 ```
 
-In later chapters we'll see various other types of events that run on
-the event loop.
+En capítulos posteriores, veremos otros tipos de eventos que se ejecutan en
+el ciclo de eventos.
 
-## Asynchronous bugs
+## Errores asincrónicos
 
 {{index "asynchronous programming"}}
 
-When your program runs synchronously, in a single go, there are no
-((state)) changes happening except those that the program itself
-makes. For asynchronous programs this is different—they may have
-_gaps_ in their execution during which other code can run.
+Cuando tu programa se ejecuta de forma síncrona, de una sola vez, no hay
+cambios de ((estado)) sucediendo aparte de aquellos que el mismo programa
+realiza. Para los programas asíncronos, esto es diferente—estos pueden tener
+_brechas_ en su ejecución durante las cuales se podria ejecutar otro código.
 
-Let's look at an example. One of the hobbies of our crows is to count
-the number of chicks that hatch throughout the village every year.
-Nests store this count in their storage bulbs. The following code tries to
-enumerate the counts from all the nests for a given year.
+Veamos un ejemplo. Uno de los pasatiempos de nuestros cuervos es contar
+la cantidad de polluelos que nacen en el pueblo cada año.
+Los nidos guardan este recuento en sus bulbos de almacenamiento. El siguiente
+código intenta enumerar los recuentos de todos los nidos para un año determinado.
 
 {{index "anyStorage function", "chicks function"}}
 
 ```{includeCode: true}
-function anyStorage(nest, source, name) {
-  if (source == nest.name) return storage(nest, name);
-  else return routeRequest(nest, source, "storage", name);
+function cualquierAlmacenamiento(nido, fuente, nombre) {
+  if (fuente == nido.nombre) return almacenamiento(nido, nombre);
+  else return solicitudRuta(nido, fuente, "almacenamiento", nombre);
 }
 
-async function chicks(nest, year) {
-  let list = "";
-  await Promise.all(network(nest).map(async name => {
-    list += `${name}: ${
-      await anyStorage(nest, name, `chicks in ${year}`)
+async function polluelos(nido, años) {
+  let lista = "";
+  await Promise.all(red(nido).map(async nombre => {
+    lista += `${nombre}: ${
+      await cualquierAlmacenamiento(nido, nombre, `polluelos en ${años}`)
     }\n`;
   }));
-  return list;
+  return lista;
 }
 ```
 
 {{index "async function"}}
 
-The `async name =>` part shows that ((arrow function))s can also be
-made `async` by putting the word `async` in front of them.
+La parte `async nombre =>` muestra que las ((funciones de flecha)) también pueden
+ser `async` al poner la palabra `async` delante de ellas.
 
 {{index "Promise.all function"}}
 
-The code doesn't immediately look suspicious... it maps the `async`
-arrow function over the set of nests, creating an array of promises,
-and then uses `Promise.all` to wait for all of these before returning
-the list they build up.
+El código no parece sospechoso de inmediato... mapea la función de flecha
+`async` sobre el conjunto de nidos, creando una serie de promesas,
+y luego usa `Promise.all` para esperar a todos estas antes de retornar
+la lista que estas construyen.
 
-But it is seriously broken. It'll always return only a single line of
-output, listing the nest that was slowest to respond.
+Pero está seriamente roto. Siempre devolverá solo una línea de
+salida, enumerando al nido que fue más lento en responder.
 
 {{if interactive
 
 ```
-chicks(granRoble, 2017).then(console.log);
+polluelos(granRoble, 2017).then(console.log);
 ```
 
 if}}
 
-Can you work out why?
+Puedes averiguar por qué?
 
 {{index "+= operator"}}
 
-The problem lies in the `+=` operator, which takes the _current_ value
-of `list` at the time where the statement starts executing, and then,
-when the `await` finishes, sets the `list` binding to be that value
-plus the added string.
+El problema radica en el operador `+=`, que toma el valor _actual_
+de `lista` en el momento en que la instrucción comienza a ejecutarse, y luego,
+cuando el `await` termina, establece que la vinculaciòn `lista` sea ese valor
+más el string agregado.
 
 {{index "await keyword"}}
 
-But between the time where the statement starts executing and the time
-where it finishes there's an asynchronous gap. The `map` expression
-runs before anything has been added to the list, so each of the `+=`
-operators starts from an empty string and ends up, when its storage
-retrieval finishes, setting `list` to a single-line list—the result of
-adding its line to the empty string.
+Pero entre el momento en el que la declaración comienza a ejecutarse y el momento
+donde termina hay una brecha asincrónica. La expresión `map` se ejecuta antes
+de que se haya agregado algo a la lista, por lo que cada uno de los operadores
+`+=` comienza desde un string vacío y termina cuando su recuperación de
+almacenamiento finaliza, estableciendo `lista` como una lista de una sola
+línea—el resultado de agregar su línea al string vacío.
 
 {{index "side effect"}}
 
-This could have easily been avoided by returning the lines from the
-mapped promises and calling `join` on the result of `Promise.all`,
-instead of building up the list by changing a binding. As usual,
-computing new values is less error-prone than changing existing
-values.
+Esto podría haberse evitado fácilmente retornando las líneas de las
+promesas mapeadas y llamando a `join` en el resultado de `Promise.all`,
+en lugar de construir la lista cambiando una vinculación. Como siempre,
+calcular nuevos valores es menos propenso a errores que cambiar
+valores existentes.
 
 {{index "chicks function"}}
 
 ```
-async function chicks(nest, year) {
-  let lines = network(nest).map(async name => {
-    return name + ": " +
-      await anyStorage(nest, name, `chicks in ${year}`);
+async function polluelos(nido, año) {
+  let lineas = red(nido).map(async nombre => {
+    return nombre + ": " +
+      await cualquierAlmacenamiento(nido, nombre, `polluelos en ${año}`);
   });
-  return (await Promise.all(lines)).join("\n");
+  return (await Promise.all(lineas)).join("\n");
 }
 ```
 
-Mistakes like this are easy to make, especially when using `await`,
-and you should be aware of where the gaps in your code occur. An
-advantage of JavaScript's _explicit_ asynchronicity (whether through
-callbacks, promises, or `await`) is that spotting these gaps is
-relatively easy.
+Errores como este son fáciles de hacer, especialmente cuando se usa `await`,
+y debes tener en cuenta dónde se producen las brechas en tu código. Una
+ventaja de la asincronicidad _explicita_ de JavaScript (ya sea a través de
+devoluciones de llamada, promesas, o `await`) es que detectar estas brechas es
+relativamente fácil.
 
-## Summary
+## Resumen
 
-Asynchronous programming makes it possible to express waiting for
-long-running actions without freezing the program during these
-actions. JavaScript environments typically implement this style of
-programming using callbacks, functions that are called when the
-actions complete. An event loop schedules such callbacks to be called
-when appropriate, one after the other, so that their execution does
-not overlap.
+La programación asincrónica permite expresar la espera de
+acciones de larga duración sin congelar el programa durante estas
+acciones. Los entornos de JavaScript suelen implementar este estilo de
+programación usando devoluciones de llamada, funciones que son llaman cuando las
+acciones son completadas. Un ciclo de eventos planifica que dichas devoluciones
+de llamadas sean llamadas cuando sea apropiado, una después de la otra,
+para que sus ejecuciones no se superpongan.
 
-Programming asynchronously is made easier by promises, objects that
-represent actions that might complete in the future, and `async`
-functions, which allow you to write an asynchronous program as if it
-is synchronous.
+La programación asíncrona se hace más fácil mediante promesas, objetos que
+representar acciones que podrían completarse en el futuro, y funciones `async`,
+que te permiten escribir un programa asíncrono como si fuera sincrónico.
 
-## Exercises
+## Ejercicios
 
-### Tracking the scalpel
+### Siguiendo el bisturí
 
 {{index "scalpel (exercise)"}}
 
-The village crows own an old scalpel that they occasionally use on
-special missions—say, to cut through screen doors or packaging. To be
-able to quickly track it down, every time the scalpel is moved to
-another nest, an entry is added to the storage of both the nest that
-had it and the nest that took it, under the name `"scalpel"`, with its
-new location as value.
+Los cuervos del pueblo poseen un viejo bisturí que ocasionalmente usan en
+misiones especiales—por ejemplo, para cortar puertas de malla o embalar cosas.
+Para ser capaces de rastrearlo rápidamente, cada vez que se mueve el bisturí
+a otro nido, una entrada se agrega al almacenamiento tanto del nido que
+lo tenía como al nido que lo tomó, bajo el nombre `"bisturí"`, con su
+nueva ubicación como su valor.
 
-This means that finding the scalpel is a matter of following the
-breadcrumb trail of storage entries, until you find a nest where that
-points at the nest itself.
+Esto significa que encontrar el bisturí es una cuestión de seguir la
+ruta de navegación de las entradas de almacenamiento, hasta que encuentres un
+nido que apunte a el nido en si mismo.
 
 {{index "anyStorage function", "async function"}}
 
-Write an `async` function `locateScalpel` that does this, starting at
-the nest on which it runs. You can use the `anyStorage` function
-defined earlier to access storage in arbitrary nests. The scalpel has
-been going around long enough that you may assume that every nest has
-a `"scalpel"` entry in its data storage.
+Escribe una función `async`, `localizarBisturi` que haga esto, comenzando en
+el nido en el que se ejecute. Puede usar la función `cualquierAlmacenamiento`
+definida anteriormente para acceder al almacenamiento en nidos arbitrarios.
+El bisturí ha estado dando vueltas el tiempo suficiente como para que puedas
+suponer que cada nido tiene una entrada `bisturí` en su almacenamiento de datos.
 
-Next, write the same function again without using `async` and `await`.
+Luego, vuelve a escribir la misma función sin usar `async` y `await`.
 
 {{index "exception handling"}}
 
-Do request failures properly show up as rejections of the returned
-promise in both versions? How?
+Las fallas de solicitud se muestran correctamente como rechazos de la
+promesa devuelta en ambas versiones? Cómo?
 
 {{if interactive
 
 ```{test: no}
-async function locateScalpel(nest) {
-  // Your code here.
+async function localizarBisturi(nido) {
+  // Tu codigo aqui.
 }
 
-function locateScalpel2(nest) {
-  // Your code here.
+function localizarBisturi2(nido) {
+  // Tu codigo aqui.
 }
 
-locateScalpel(granRoble).then(console.log);
-// → Butcher Shop
+localizarBisturi(granRoble).then(console.log);
+// → Tienda del Carnicero
 ```
 
 if}}
@@ -1298,66 +1296,66 @@ if}}
 
 {{index "scalpel (exercise)"}}
 
-This can be done with a single loop that searches through the nests,
-moving forward to the next when it finds a value that doesn't match
-the current nest's name, and returning the name when it finds a
-matching value. In the `async` function, a regular `for` or `while`
-loop can be used.
+Esto se puede realizar con un solo ciclo que busca a través de los nidos,
+avanzando hacia el siguiente cuando encuentre un valor que no coincida
+con el nombre del nido actual, y retornando el nombre cuando esta encuentra un
+valor que coincida. En la función `async`, un ciclo regular `for` o `while`
+puede ser utilizado.
 
 {{index recursion}}
 
-To do the same in a plain function, you will have to build your loop
-using a recursive function. The easiest way to do this is to have that
-function return a promise by calling `then` on the promise that
-retrieves the storage value. Depending on whether that value matches
-the name of the current nest, the handler returns that value or a
-further promise created by calling the loop function again.
+Para hacer lo mismo con una función simple, tendrás que construir tu ciclo
+usando una función recursiva. La manera más fácil de hacer esto es hacer
+que esa función retorne una promesa al llamar a `then` en la promesa que
+recupera el valor de almacenamiento. Dependiendo de si ese valor coincide
+con el nombre del nido actual, el controlador devuelve ese valor o una
+promesa adicional creada llamando a la función de ciclo nuevamente.
 
-Don't forget to start the loop by calling the recursive function once
-from the main function.
+No olvides iniciar el ciclo llamando a la función recursiva una vez
+desde la función principal.
 
 {{index "exception handling"}}
 
-In the `async` function, rejected promises are converted to exceptions
-by `await`. When an `async` function throws an exception, its promise
-is rejected. So that works.
+En la función `async`, las promesas rechazadas se convierten en excepciones
+por `await` Cuando una función `async` arroja una excepción, su promesa
+es rechazada. Entonces eso funciona.
 
-If you implemented the non-`async` function as outlined above, the way
-`then` works also automatically causes a failure to end up in the
-returned promise. If a request fails, the handler passed to `then`
-isn't called, and the promise it returns is rejected with the same
-reason.
+Si implementaste la función no-`async` como se describe anteriormente, la forma
+en que `then` funciona también provoca automáticamente que una falla termine
+en la promesa devuelta. Si una solicitud falla, el manejador pasado a `then`
+no se llama, y ​​la promesa que devuelve se rechaza con la misma
+razón.
 
 hint}}
 
-### Building Promise.all
+### Construyendo Promise.all
 
 {{index "Promise class", "Promise.all function", "building Promise.all (exercise)"}}
 
-Given an array of ((promise))s, `Promise.all` returns a promise that
-waits for all of the promises in the array to finish. It then
-succeeds, yielding an array of result values. If a promise
-in the array fails, the promise returned by `all` fails too, with the
-failure reason from the failing promise.
+Dado un array de ((promesa))s, `Promise.all` retorna una promesa que
+espera a que finalicen todas las promesas del array. Entonces
+tiene éxito, produciendo un array de valores de resultados. Si una promesa
+en el array falla, la promesa retornada por `all` también falla, con la
+razón de la falla proveniente de la promesa fallida.
 
-Implement something like this yourself as a regular function
-called `Promise_all`.
+Implemente algo como esto tu mismo como una función regular
+llamada `Promise_all`.
 
-Remember that after a promise has succeeded or failed, it can't
-succeed or fail again, and further calls to the functions that resolve
-it are ignored. This can simplify the way you handle failure of your
-promise.
+Recuerda que una vez que una promesa ha tenido éxito o ha fallado, no puede
+tener éxito o fallar de nuevo, y llamadas subsecuentes a las funciones que
+resuelven son ignoradas. Esto puede simplificar la forma en que manejas la
+falla de tu promesa.
 
 {{if interactive
 
 ```{test: no}
-function Promise_all(promises) {
+function Promise_all(promesa) {
   return new Promise((resolve, reject) => {
-    // Your code here.
+    // Tu codigo aqui.
   });
 }
 
-// Test code.
+// Codigo de Prueba.
 Promise_all([]).then(array => {
   console.log("This should be []:", array);
 });
@@ -1386,25 +1384,25 @@ if}}
 
 {{index "Promise.all function", "Promise class", "then method", "building Promise.all (exercise)"}}
 
-The function passed to the `Promise` constructor will have to call
-`then` on each of the promises in the given array. When one of them
-succeeds, two things need to happen. The resulting value needs to be
-stored in the correct position of a result array, and we must check
-whether this was the last pending ((promise)) and finish our own
-promise if it was.
+La función pasada al constructor `Promise` tendrá que llamar
+`then` en cada una de las promesas del array dado. Cuando una de ellas
+tenga éxito, dos cosas deben suceder. El valor resultante debe ser
+almacenado en la posición correcta de un array de resultados, y debemos
+verificar si esta fue la última ((promesa)) pendiente y terminar nuestra
+promesa si asi fue.
 
 {{index "counter variable"}}
 
-The latter can be done with a counter that is initialized to the
-length of the input array and from which we subtract 1 every time a
-promise succeeds. When it reaches 0, we are done. Make sure you take
-into account the situation where the input array is empty (and thus no
-promise will ever resolve).
+Esto último se puede hacer con un contador que se inicializa con la
+longitud del array de entrada y del que restamos 1 cada vez que una
+promesa tenga éxito. Cuando llega a 0, hemos terminado. Asegúrate de tener
+en cuenta la situación en la que el array de entrada este vacío (y
+por lo tanto ninguna promesa nunca se resolverá).
 
-Handling failure requires some thought but turns out to be extremely
-simple. Just pass the `reject` function of the wrapping promise to
-each of the promises in the array as a `catch` handler or as second
-argument to `then` so that a failure in one of them triggers the
-rejection of the whole wrapper promise.
+El manejo de la falla requiere pensar un poco, pero resulta ser extremadamente
+sencillo. Solo pasa la función `reject` de la promesa de envoltura a
+cada una de las promesas en el array como manejador `catch` o como segundo
+argumento a `then` para que una falla en una de ellos desencadene el
+rechazo de la promesa de envoltura completa.
 
 hint}}
