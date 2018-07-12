@@ -1,276 +1,277 @@
 {{meta {load_files: ["code/chapter/12_language.js"], zip: "node/html"}}}
 
-# Project: A Programming Language
+# Proyecto: Un Lenguaje de Programación
 
 {{quote {author: "Hal Abelson and Gerald Sussman", title: "Structure and Interpretation of Computer Programs", chapter: true}
 
-The evaluator, which determines the meaning of expressions in a
-programming language, is just another program.
+El evaluador, que determina el significado de las expresiones en un
+lenguaje de programación, es solo otro programa.
 
 quote}}
 
 {{index "Abelson, Hal", "Sussman, Gerald", SICP, "project chapter"}}
 
-Building your own ((programming language)) is surprisingly easy (as
-long as you do not aim too high) and very enlightening.
+Construir tu propio ((lenguaje de programación) es sorprendentemente fácil
+(siempre y cuando no apunted demasiado alto) y muy esclarecedor.
 
-The main thing I want to show in this chapter is that there is no
-((magic)) involved in building your own language. I've often felt that
-some human inventions were so immensely clever and complicated that
-I'd never be able to understand them. But with a little reading and
-experimenting, they often turn out to be quite mundane.
+Lo principal que quiero mostrar en este capítulo es que no hay
+((magia)) involucrada en la construcción de tu propio lenguaje. A menudo
+he sentido que algunos inventos humanos eran tan inmensamente inteligentes
+y complicados que nunca podría llegar a entenderlos. Pero con un poco de lectura
+y experimentación, a menudo resultan ser bastante mundanos.
 
 {{index "Egg language"}}
 
-We will build a programming language called Egg. It will be a tiny,
-simple language—but one that is powerful enough to express any
-computation you can think of. It will allow simple ((abstraction))
-based on ((function))s.
+Construiremos un lenguaje de programación llamado Egg. Será un lenguaje pequeño
+y simple—pero lo suficientemente poderoso como para expresar cualquier
+computación que puedes pensar. Permitirá una ((abstracción)) simple
+basada en ((funcion))es.
 
 {{id parsing}}
 
-## Parsing
+## Análisis
 
 {{index parsing, validation}}
 
-The most immediately visible part of a programming language is its
-_((syntax))_, or notation. A _parser_ is a program that reads a piece
-of text and produces a data structure that reflects the structure of
-the program contained in that text. If the text does not form a valid
-program, the parser should point out the error.
+La parte más visible de un lenguaje de programación es su
+_((sintaxis))_, o notación. Un _analizador_ es un programa que lee una pieza
+de texto y produce una estructura de datos que refleja la estructura del
+programa contenido en ese texto. Si el texto no forma un programa válido,
+el analizador debe señalar el error.
 
 {{index "special form", [function, application]}}
 
-Our language will have a simple and uniform syntax. Everything in Egg
-is an ((expression)). An expression can be the name of a binding, a
-number, a string, or an _application_. Applications are used for
-function calls but also for constructs such as `if` or `while`.
+Nuestro lenguaje tendrá una sintaxis simple y uniforme. Todo en Egg
+es una ((expresión)). Una expresión puede ser el nombre de una vinculación, un
+número, un string o una _aplicación_. Las aplicaciones son usadas para
+llamadas de función pero también para constructos como `if` o `while`.
 
 {{index "double-quote character", parsing, [escaping, "in strings"]}}
 
-To keep the parser simple, strings in Egg do not support anything like
-backslash escapes. A string is simply a sequence of characters that
-are not double quotes, wrapped in double quotes. A number is a
-sequence of digits. Binding names can consist of any character that is
-not ((whitespace)) and that does not have a special meaning in the syntax.
+Para mantener el analizador simple, los strings en Egg no soportan nada parecido
+a escapes de barra invertida. Un string es simplemente una secuencia de
+caracteres que no son comillas dobles, envueltas en comillas dobles. Un número
+es un secuencia de dígitos. Los nombres de vinculaciones pueden consistir en
+cualquier carácter no que sea un ((espacio en blanco)) y eso no tiene un
+significado especial en la sintaxis.
 
 {{index "comma character"}}
 
-Applications are written the way they are in JavaScript, by putting
-((parentheses)) after an expression and having any number of
-((argument))s between those parentheses, separated by commas.
+Las aplicaciones se escriben tal y como están en JavaScript, poniendo
+((paréntesis)) después de una expresión y teniendo cualquier cantidad de
+((argumento))s entre esos paréntesis, separados por comas.
 
 ```{lang: null}
-do(define(x, 10),
-   if(>(x, 5),
-      print("large"),
-      print("small")))
+hacer(definir(x, 10),
+   si(>(x, 5),
+      imprimir("grande"),
+      imprimir("pequeño")))
 ```
 
 {{index block}}
 
-The ((uniformity)) of the ((Egg language)) means that things that are
-((operator))s in JavaScript (such as `>`) are normal bindings in this
-language, applied just like other ((function))s. And since the
-((syntax)) has no concept of a block, we need a `do` construct to
-represent doing multiple things in sequence.
+La ((uniformidad)) del ((lenguaje Egg)) significa que las cosas que son
+((operador))es en JavaScript (como `>`) son vinculaciones normales en este
+lenguaje, aplicadas como cualquier ((función)). Y dado que la
+((sintaxis)) no tiene un concepto de bloque, necesitamos una construcción
+`hacer` para representar el hecho de realizar múltiples cosas en secuencia.
 
 {{index "type property", parsing}}
 
-The ((data structure)) that the parser will use to describe a program
-consists of ((expression)) objects, each of which has a `type`
-property indicating the kind of expression it is and other properties
-to describe its content.
+La ((estructura de datos)) que el analizador usará para describir un programa
+consta de objetos de ((expresión)), cada uno de los cuales tiene una
+propiedad `tipo` que indica el tipo de expresión que este es y otras propiedades
+que describen su contenido.
 
 {{index identifier}}
 
-Expressions of type `"value"` represent literal strings or numbers.
-Their `value` property contains the string or number value that they
-represent. Expressions of type `"word"` are used for identifiers
-(names). Such objects have a `name` property that holds the
-identifier's name as a string. Finally, `"apply"` expressions
-represent applications. They have an `operator` property that refers
-to the expression that is being applied, and an `args` property that
-holds an array of argument expressions.
+Las expresiones de tipo `"valor"` representan strings o números literales.
+Su propiedad `valor` contiene el string o valor numérico que estos
+representan. Las expresiones de tipo `"palabra"` se usan para identificadores
+(nombres). Dichos objetos tienen una propiedad `nombre` que contienen el
+nombre del identificador como un string. Finalmente, las expresiones `"aplicar"`
+representan aplicaciones. Tienen una propiedad `operador` que se refiere
+a la expresión que está siendo aplicada, y una propiedad `argumentos` que
+contiene un array de expresiones de argumentos.
 
-The `>(x, 5)` part of the previous program would be represented like this:
+La parte `>(x, 5)` del programa anterior se representaría de esta manera:
 
 ```{lang: "application/json"}
 {
-  type: "apply",
-  operator: {type: "word", name: ">"},
-  args: [
-    {type: "word", name: "x"},
-    {type: "value", value: 5}
+  tipo: "aplicar",
+  operador: {tipo: "palabra", nombre: ">"},
+  argumentos: [
+    {tipo: "palabra", nombre: "x"},
+    {tipo: "valor", valor: 5}
   ]
 }
 ```
 
 {{indexsee "abstract syntax tree", "syntax tree"}}
 
-Such a ((data structure)) is called a _((syntax tree))_. If you
-imagine the objects as dots and the links between them as lines
-between those dots, it has a ((tree))like shape. The fact that
-expressions contain other expressions, which in turn might contain
-more expressions, is similar to the way tree branches split and split
-again.
+Tal ((estructura de datos)) se llama _((árbol de sintaxis))_. Si tu
+imaginas los objetos como puntos y los enlaces entre ellos como líneas
+entre esos puntos, tiene una forma similar a un ((árbol)). El hecho de que
+las expresiones contienen otras expresiones, que a su vez pueden contener
+más expresiones, es similar a la forma en que las ramas de los árboles se
+dividen y dividen una y otra vez.
 
 {{figure {url: "img/syntax_tree.svg", alt: "The structure of a syntax tree",width: "5cm"}}}
 
 {{index parsing}}
 
-Contrast this to the parser we wrote for the configuration file format
-in [Chapter ?](regexp#ini), which had a simple structure: it split the
-input into lines and handled those lines one at a time. There were
-only a few simple forms that a line was allowed to have.
+Compara esto con el analizador que escribimos para el formato de archivo de
+configuración en el [Capítulo 9](regexp#ini), que tenía una estructura simple:
+dividía la entrada en líneas y manejaba esas líneas una a la vez. Habían
+solo unas pocas formas simples que se le permitía tener a una línea.
 
 {{index recursion, [nesting, "of expressions"]}}
 
-Here we must find a different approach. Expressions are not separated
-into lines, and they have a recursive structure. Application
-expressions _contain_ other expressions.
+Aquí debemos encontrar un enfoque diferente. Las expresiones no están
+separadas en líneas, y tienen una estructura recursiva. Las
+expresiones de aplicaciones _contienen_ otras expresiones.
 
 {{index elegance}}
 
-Fortunately, this problem can be solved very well by writing a parser
-function that is recursive in a way that reflects the recursive nature
-of the language.
+Afortunadamente, este problema se puede resolver muy bien escribiendo una
+función analizadora que es recursiva en una manera que refleje
+la naturaleza recursiva del lenguaje.
 
 {{index "parseExpression function", "syntax tree"}}
 
-We define a function `parseExpression`, which takes a string as input
-and returns an object containing the data structure for the expression
-at the start of the string, along with the part of the string left
-after parsing this expression. When parsing subexpressions (the
-argument to an application, for example), this function can be called
-again, yielding the argument expression as well as the text that
-remains. This text may in turn contain more arguments or may be the
-closing parenthesis that ends the list of arguments.
+Definimos una función `analizarExpresion`, que toma un string como entrada
+y retorna un objeto que contiene la estructura de datos para la expresión
+al comienzo del string, junto con la parte del string que queda
+después de analizar esta expresión Al analizar subexpresiones (el
+argumento para una aplicación, por ejemplo), esta función puede ser llamada
+de nuevo, produciendo la expresión del argumento, así como al texto que
+permanece. A su vez, este texto puede contener más argumentos o puede ser el
+paréntesis de cierre que finaliza la lista de argumentos.
 
-This is the first part of the parser:
+Esta es la primera parte del analizador:
 
 ```{includeCode: true}
-function parseExpression(program) {
-  program = skipSpace(program);
-  let match, expr;
-  if (match = /^"([^"]*)"/.exec(program)) {
-    expr = {type: "value", value: match[1]};
-  } else if (match = /^\d+\b/.exec(program)) {
-    expr = {type: "value", value: Number(match[0])};
-  } else if (match = /^[^\s(),"]+/.exec(program)) {
-    expr = {type: "word", name: match[0]};
+function analizarExpresion(programa) {
+  programa = saltarEspacio(programa);
+  let emparejamiento, expresion;
+  if (emparejamiento = /^"([^"]*)"/.exec(programa)) {
+    expresion = {tipo: "valor", valor: emparejamiento[1]};
+  } else if (emparejamiento = /^\d+\b/.exec(programa)) {
+    expresion = {tipo: "valor", valor: Number(emparejamiento[0])};
+  } else if (emparejamiento = /^[^\s(),"]+/.exec(programa)) {
+    expresion = {tipo: "palabra", nombre: emparejamiento[0]};
   } else {
-    throw new SyntaxError("Unexpected syntax: " + program);
+    throw new SyntaxError("Sintaxis inesperada: " + programa);
   }
 
-  return parseApply(expr, program.slice(match[0].length));
+  return aplicarAnalisis(expresion, programa.slice(emparejamiento[0].length));
 }
 
-function skipSpace(string) {
-  let first = string.search(/\S/);
-  if (first == -1) return "";
-  return string.slice(first);
+function saltarEspacio(string) {
+  let primero = string.search(/\S/);
+  if (primero == -1) return "";
+  return string.slice(primero);
 }
 ```
 
 {{index "skipSpace function"}}
 
-Because Egg, like JavaScript, allows any amount of ((whitespace))
-between its elements, we have to repeatedly cut the whitespace off the
-start of the program string. That is what the `skipSpace` function
-helps with.
+Dado que Egg, al igual que JavaScript, permite cualquier cantidad de ((espacios
+en blanco)) entre sus elementos, tenemos que remover repetidamente los espacios
+en blanco del inicio del string del programa. Para esto nos ayuda la función
+`saltarEspacio`.
 
 {{index "literal expression", "SyntaxError type"}}
 
-After skipping any leading space, `parseExpression` uses three
-((regular expression))s to spot the three atomic elements that Egg
-supports: strings, numbers, and words. The parser constructs a
-different kind of data structure depending on which one matches. If
-the input does not match one of these three forms, it is not a valid
-expression, and the parser throws an error. We use `SyntaxError`
-instead of `Error` as exception constructor, which is another standard
-error type, because it is a little more specific—it is also the error
-type thrown when an attempt is made to run an invalid JavaScript
-program.
+Después de saltar cualquier espacio en blanco, `analizarExpresion` usa tres
+((expresiones regular))es para detectar los tres elementos atómicos que Egg
+soporta: strings, números y palabras. El analizador construye un
+tipo diferente de estructura de datos dependiendo de cuál coincida. Si
+la entrada no coincide con ninguna de estas tres formas, la expresión no
+es válida, y el analizador arroja un error. Usamos `SyntaxError`
+en lugar de `Error` como constructor de excepción, el cual es otro
+tipo de error estándar, dado que es un poco más específico—también es el
+tipo de error lanzado cuando se intenta ejecutar un programa de
+JavaScript no válido.
 
 {{index "parseApply function"}}
 
-We then cut off the part that was matched from the program string and
-pass that, along with the object for the expression, to `parseApply`,
-which checks whether the expression is an application. If so, it
-parses a parenthesized list of arguments.
+Luego cortamos la parte que coincidio del string del programa y
+pasamos eso, junto con el objeto para la expresión, a `aplicarAnalisis`,
+el cual verifica si la expresión es una aplicación. Si es así,
+analiza una lista de los argumentos entre paréntesis.
 
 ```{includeCode: true}
-function parseApply(expr, program) {
-  program = skipSpace(program);
-  if (program[0] != "(") {
-    return {expr: expr, rest: program};
+function aplicarAnalisis(expresion, programa) {
+  programa = saltarEspacio(programa);
+  if (programa[0] != "(") {
+    return {expresion: expresion, resto: programa};
   }
 
-  program = skipSpace(program.slice(1));
-  expr = {type: "apply", operator: expr, args: []};
-  while (program[0] != ")") {
-    let arg = parseExpression(program);
-    expr.args.push(arg.expr);
-    program = skipSpace(arg.rest);
-    if (program[0] == ",") {
-      program = skipSpace(program.slice(1));
-    } else if (program[0] != ")") {
-      throw new SyntaxError("Expected ',' or ')'");
+  programa = saltarEspacio(programa.slice(1));
+  expresion = {tipo: "aplicar", operador: expresion, argumentos: []};
+  while (programa[0] != ")") {
+    let argumento = analizarExpresion(programa);
+    expresion.argumentos.push(argumento.expresion);
+    programa = saltarEspacio(argumento.resto);
+    if (programa[0] == ",") {
+      programa = saltarEspacio(programa.slice(1));
+    } else if (programa[0] != ")") {
+      throw new SyntaxError("Experaba ',' o ')'");
     }
   }
-  return parseApply(expr, program.slice(1));
+  return aplicarAnalisis(expresion, programa.slice(1));
 }
 ```
 
 {{index parsing}}
 
-If the next character in the program is not an opening parenthesis,
-this is not an application, and `parseApply` returns the expression it
-was given.
+Si el siguiente carácter en el programa no es un paréntesis de apertura,
+esto no es una aplicación, y `aplicarAnalisis` retorna la expresión que
+se le dio.
 
 {{index recursion}}
 
-Otherwise, it skips the opening parenthesis and creates the ((syntax
-tree)) object for this application expression. It then recursively
-calls `parseExpression` to parse each argument until a closing
-parenthesis is found. The recursion is indirect, through `parseApply`
-and `parseExpression` calling each other.
+De lo contrario, salta el paréntesis de apertura y crea el objeto de
+((árbol)) de sintaxis para esta expresión de aplicación. Entonces, recursivamente
+llama a `analizarExpresion` para analizar cada argumento hasta que se encuentre
+el paréntesis de cierre. La recursión es indirecta, a través de `aplicarAnalisis`
+y `analizarExpresion` llamando una a la otra.
 
-Because an application expression can itself be applied (such as in
-`multiplier(2)(1)`), `parseApply` must, after it has parsed an
-application, call itself again to check whether another pair of
-parentheses follows.
+Dado que una expresión de aplicación puede ser aplicada a sí misma (como en
+`multiplicador(2)(1)`), `aplicarAnalisis` debe, después de haber analizado una
+aplicación, llamarse asi misma de nuevo para verificar si otro par de
+paréntesis sigue a continuación.
 
 {{index "syntax tree", "Egg language", "parse function"}}
 
-This is all we need to parse Egg. We wrap it in a convenient `parse`
-function that verifies that it has reached the end of the input string
-after parsing the expression (an Egg program is a single expression),
-and that gives us the program's data structure.
+Esto es todo lo que necesitamos para analizar Egg. Envolvemos esto en una
+conveniente función `analizar` que verifica que ha llegado al final del string
+de entrada después de analizar la expresión (un programa Egg es una sola
+expresión), y eso nos da la estructura de datos del programa.
 
 ```{includeCode: strip_log, test: join}
-function parse(program) {
-  let {expr, rest} = parseExpression(program);
-  if (skipSpace(rest).length > 0) {
-    throw new SyntaxError("Unexpected text after program");
+function analizar(programa) {
+  let {expresion, resto} = analizarExpresion(programa);
+  if (saltarEspacio(resto).length > 0) {
+    throw new SyntaxError("Texto inesperado despues de programa");
   }
-  return expr;
+  return expresion;
 }
 
-console.log(parse("+(a, 10)"));
-// → {type: "apply",
-//    operator: {type: "word", name: "+"},
-//    args: [{type: "word", name: "a"},
-//           {type: "value", value: 10}]}
+console.log(analizar("+(a, 10)"));
+// → {tipo: "aplicar",
+//    operador: {tipo: "palabra", nombre: "+"},
+//    argumentos: [{tipo: "palabra", nombre: "a"},
+//           {tipo: "valor", valor: 10}]}
 ```
 
 {{index "error message"}}
 
-It works! It doesn't give us very helpful information when it fails
-and doesn't store the line and column on which each expression starts,
-which might be helpful when reporting errors later, but it's good
-enough for our purposes.
+Funciona! No nos da información muy útil cuando falla
+y no almacena la línea y la columna en que comienza cada expresión,
+lo que podría ser útil al informar errores más tarde, pero es lo
+suficientemente bueno para nuestros propósitos.
 
 ## The evaluator
 
@@ -285,21 +286,21 @@ produces.
 ```{includeCode: true}
 const specialForms = Object.create(null);
 
-function evaluate(expr, scope) {
-  if (expr.type == "value") {
-    return expr.value;
-  } else if (expr.type == "word") {
-    if (expr.name in scope) {
-      return scope[expr.name];
+function evaluate(expresion, scope) {
+  if (expresion.type == "value") {
+    return expresion.value;
+  } else if (expresion.type == "word") {
+    if (expresion.name in scope) {
+      return scope[expresion.name];
     } else {
       throw new ReferenceError(
-        `Undefined binding: ${expr.name}`);
+        `Undefined binding: ${expresion.name}`);
     }
-  } else if (expr.type == "apply") {
-    let {operator, args} = expr;
+  } else if (expresion.type == "apply") {
+    let {operator, args} = expresion;
     if (operator.type == "word" &&
         operator.name in specialForms) {
-      return specialForms[operator.name](expr.args, scope);
+      return specialForms[operator.name](expresion.args, scope);
     } else {
       let op = evaluate(operator, scope);
       if (typeof op == "function") {
@@ -355,9 +356,9 @@ associates words with functions that evaluate such forms. It is
 currently empty. Let's add `if`.
 
 ```{includeCode: true}
-specialForms.if = (args, scope) => {
+specialForms.si = (args, scope) => {
   if (args.length != 3) {
-    throw new SyntaxError("Wrong number of args to if");
+    throw new SyntaxError("Wrong number of args to si");
   } else if (evaluate(args[0], scope) !== false) {
     return evaluate(args[1], scope);
   } else {
@@ -368,7 +369,7 @@ specialForms.if = (args, scope) => {
 
 {{index "conditional execution", "ternary operator", "?: operator", "conditional operator"}}
 
-Egg's `if` construct expects exactly three arguments. It will evaluate
+Egg's `si` construct expects exactly three arguments. It will evaluate
 the first, and if the result isn't the value `false`, it will evaluate
 the second. Otherwise, the third gets evaluated. This `if` form is
 more similar to JavaScript's ternary `?:` operator than to
@@ -406,12 +407,12 @@ specialForms.while = (args, scope) => {
 };
 ```
 
-Another basic building block is `do`, which executes all its arguments
+Another basic building block is `hacer`, which executes all its arguments
 from top to bottom. Its value is the value produced by the last
 argument.
 
 ```{includeCode: true}
-specialForms.do = (args, scope) => {
+specialForms.hacer = (args, scope) => {
   let value = false;
   for (let arg of args) {
     value = evaluate(arg, scope);
@@ -423,16 +424,16 @@ specialForms.do = (args, scope) => {
 {{index "= operator"}}
 
 To be able to create ((binding))s and give them new values, we also
-create a form called `define`. It expects a word as its first argument
+create a form called `definir`. It expects a word as its first argument
 and an expression producing the value to assign to that word as its
-second argument. Since `define`, like everything, is an expression, it
+second argument. Since `definir`, like everything, is an expression, it
 must return a value. We'll make it return the value that was assigned
 (just like JavaScript's `=` operator).
 
 ```{includeCode: true}
-specialForms.define = (args, scope) => {
+specialForms.definir = (args, scope) => {
   if (args.length != 2 || args[0].type != "word") {
-    throw new SyntaxError("Incorrect use of define");
+    throw new SyntaxError("Incorrect use of definir");
   }
   let value = evaluate(args[1], scope);
   scope[args[0].name] = value;
@@ -464,7 +465,7 @@ topScope.false = false;
 We can now evaluate a simple expression that negates a Boolean value.
 
 ```
-let prog = parse(`if(true, false, true)`);
+let prog = parse(`si(true, false, true)`);
 console.log(evaluate(prog, topScope));
 // → false
 ```
@@ -484,10 +485,10 @@ for (let op of ["+", "-", "*", "/", "==", "<", ">"]) {
 ```
 
 A way to ((output)) values is also very useful, so we'll wrap
-`console.log` in a function and call it `print`.
+`console.log` in a function and call it `imprimir`.
 
 ```{includeCode: true}
-topScope.print = value => {
+topScope.imprimir = value => {
   console.log(value);
   return value;
 };
@@ -500,8 +501,8 @@ following function provides a convenient way to parse a program and
 run it in a fresh scope.
 
 ```{includeCode: true}
-function run(program) {
-  return evaluate(parse(program), Object.create(topScope));
+function run(programa) {
+  return evaluate(parse(programa), Object.create(topScope));
 }
 ```
 
@@ -513,12 +514,12 @@ top-level scope.
 
 ```
 run(`
-do(define(total, 0),
-   define(count, 1),
+hacer(definir(total, 0),
+   definir(count, 1),
    while(<(count, 11),
-         do(define(total, +(total, count)),
-            define(count, +(count, 1)))),
-   print(total))
+         hacer(definir(total, +(total, count)),
+            definir(count, +(count, 1)))),
+   imprimir(total))
 `);
 // → 55
 ```
@@ -578,17 +579,17 @@ the result.
 
 ```{startCode: true}
 run(`
-do(define(plusOne, fun(a, +(a, 1))),
-   print(plusOne(10)))
+hacer(definir(plusOne, fun(a, +(a, 1))),
+   imprimir(plusOne(10)))
 `);
 // → 11
 
 run(`
-do(define(pow, fun(base, exp,
-     if(==(exp, 0),
+hacer(definir(pow, fun(base, exp,
+     si(==(exp, 0),
         1,
         *(base, pow(base, -(exp, 1)))))),
-   print(pow(2, 10)))
+   imprimir(pow(2, 10)))
 `);
 // → 1024
 ```
@@ -710,14 +711,14 @@ topScope.length = "...";
 topScope.element = "...";
 
 run(`
-do(define(sum, fun(array,
-     do(define(i, 0),
-        define(sum, 0),
+hacer(definir(sum, fun(array,
+     hacer(definir(i, 0),
+        definir(sum, 0),
         while(<(i, length(array)),
-          do(define(sum, +(sum, element(array, i))),
-             define(i, +(i, 1)))),
+          hacer(definir(sum, +(sum, element(array, i))),
+             definir(i, +(i, 1)))),
         sum))),
-   print(sum(array(1, 2, 3))))
+   imprimir(sum(array(1, 2, 3))))
 `);
 // → 6
 ```
@@ -755,8 +756,8 @@ binding `a`.
 
 ```
 run(`
-do(define(f, fun(a, fun(b, +(a, b)))),
-   print(f(4)(5)))
+hacer(definir(f, fun(a, fun(b, +(a, b)))),
+   imprimir(f(4)(5)))
 `);
 // → 9
 ```
@@ -839,7 +840,7 @@ hint}}
 
 {{index [binding, definition], assignment, "fixing scope (exercise)"}}
 
-Currently, the only way to assign a ((binding)) a value is `define`.
+Currently, the only way to assign a ((binding)) a value is `definir`.
 This construct acts as a way both to define new bindings and to give
 existing ones a new value.
 
@@ -852,7 +853,7 @@ always found it an awkward way to handle ((scope)).
 
 {{index "ReferenceError type"}}
 
-Add a special form `set`, similar to `define`, which gives a binding a
+Add a special form `set`, similar to `definir`, which gives a binding a
 new value, updating the binding in an outer scope if it doesn't
 already exist in the inner scope. If the binding is not defined at
 all, throw a `ReferenceError` (another standard error type).
@@ -878,10 +879,10 @@ specialForms.set = (args, scope) => {
 };
 
 run(`
-do(define(x, 4),
-   define(setx, fun(val, set(x, val))),
+hacer(definir(x, 4),
+   definir(setx, fun(val, set(x, val))),
    setx(50),
-   print(x))
+   imprimir(x))
 `);
 // → 50
 run(`set(quux, true)`);
